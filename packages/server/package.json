@@ -1,0 +1,26 @@
+{
+  "name": "server",
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch run src/index.ts",
+    "build": "bun build src/index.ts --outdir ./dist --target=bun",
+    "migrate": "bun drizzle-kit migrate",
+    "generate": "bun drizzle-kit generate",
+    "push": "bun drizzle-kit push"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.7.2",
+    "dotenv": "^17.2.0",
+    "drizzle-orm": "^0.44.3",
+    "pg": "^8.16.3",
+    "zod": "^4.0.8",
+    "hono": "^4.8.5"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.4",
+    "types": "*",
+    "drizzle-kit": "^0.31.4",
+    "tsx": "^4.20.3"
+  }
+}
