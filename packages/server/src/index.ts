@@ -20,14 +20,16 @@ const allowedOrigins = ["https://app.brainshift.in", "http://localhost:5173"];
 app.use(
   cors({
     origin: allowedOrigins,
-    allowMethods: ["GET", "POST", "OPTIONS"],
+    allowMethods: ["GET", "POST", "OPTIONS", "PUT", "DELETE", "PATCH"],
     allowHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
     credentials: false,
   })
 );
 app.use(logger());
+app.get("/test", async (c) => {
+  return c.json({ message: "Working" });
+});
 app.route("/auth", AuthRoute);
-
 app.use("/*", async (c, next) => {
   if (c.req.path.startsWith("/api/auth")) {
     return next();
