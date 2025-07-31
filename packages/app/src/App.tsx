@@ -16,8 +16,8 @@ import GoalFormPage from './pages/goal-form.page';
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <BrowserRouter>
+    <BrowserRouter>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <AuthProvider>
           <Routes>
             <Route path="/" element={<LoginPage />} />
@@ -38,8 +38,8 @@ function App() {
             </Route>
           </Routes>
         </AuthProvider>
-      </BrowserRouter>
-    </ThemeProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }
 
