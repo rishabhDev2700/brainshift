@@ -15,7 +15,16 @@ import SessionRoutes from "./routes/sessions";
 import { cors } from "hono/cors";
 const app = new Hono<{ Variables: HonoVariables }>().basePath("/api");
 
-app.use(cors());
+const allowedOrigins = ["https://app.brainshift.in", "http://localhost:5173"];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    allowMethods: ["GET", "POST", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    credentials: false,
+  })
+);
 app.use(logger());
 app.route("/auth", AuthRoute);
 
