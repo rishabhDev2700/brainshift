@@ -4,8 +4,6 @@ packages:
 onlyBuiltDependencies:
   - esbuild
 
-overrides:
-  types: link:packages/types
 
 hoistWorkspacePackages:
   - true
