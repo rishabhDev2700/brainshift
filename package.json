@@ -6,9 +6,9 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently \"pnpm run --filter app dev\" \"pnpm run --filter server dev\"",
-    "build": "pnpm run --filter \"./packages/*\" build",
-    "start": "pnpm run --filter ./packages/server start"
+    "dev": "concurrently \"bun run --filter app dev\" \"bun run --filter server dev\"",
+    "build": "bun run --filter \"./packages/*\" build",
+    "start": "bun run --filter ./packages/server start"
   },
   "devDependencies": {
     "@eslint/js": "^9.31.0",
