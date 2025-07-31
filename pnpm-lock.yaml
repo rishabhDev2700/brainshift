@@ -191,8 +191,6 @@ importers:
         specifier: link:../types
         version: link:../types
 
-  packages/types: {}
-
 packages:
 
   '@ampproject/remapping@2.3.0':
