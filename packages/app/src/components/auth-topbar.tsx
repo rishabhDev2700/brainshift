@@ -1,4 +1,3 @@
-import React from 'react'
 import { ModeToggle } from './mode-toggle'
 import { ZapIcon } from 'lucide-react'
 
