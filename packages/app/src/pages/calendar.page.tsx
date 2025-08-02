@@ -15,16 +15,24 @@ import { EventForm } from "@/components/forms/event-form";
 import { Calendar } from "@/components/ui/calendar"
 import type { EventSchema } from "@/types";
 import EventCard from "@/components/event-card";
+import { useSearchParams } from "react-router-dom";
 
 
 function CalendarPage() {
-    const [date, setDate] = useState<Date | undefined>(new Date());
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [date, setDate] = useState<Date | undefined>(() => {
+        const dateParam = searchParams.get("date");
+        return dateParam ? new Date(`${dateParam}T00:00:00.000Z`) : new Date();
+    });
     const [events, setEvents] = useState<EventSchema[]>([]);
+
     useEffect(() => {
         if (date) {
+            const dateString = date.toISOString().split('T')[0];
+            setSearchParams({ date: dateString });
             fetchEventsByDate(date);
         }
-    }, [date]);
+    }, [date, setSearchParams]);
 
     async function fetchEventsByDate(date: Date) {
         const res = await dataService.getEventsByDate(date.toISOString().split('T')[0]);
@@ -45,7 +53,7 @@ function CalendarPage() {
                             <DialogDescription>Fill in the details for your new calendar event.
                             </DialogDescription>
                         </DialogHeader>
-                        <EventForm />
+                        <EventForm fetchEvents={() => date && fetchEventsByDate(date)} />
                     </DialogContent>
                 </Dialog>
             </div>
@@ -57,13 +65,14 @@ function CalendarPage() {
                         selected={date}
                         onSelect={setDate}
                         className="duration-200 w-full mb-4"
+                        timeZone="UTC"
                     />
                 </div>
                 <div className="mt-4">
                     <h3 className="text-xl font-semibold mb-4">Events for {date?.toLocaleDateString() || 'Selected Date'}</h3>
                     <div className="space-y-4">
                         {Array.isArray(events) && events.map(event => (
-                            <EventCard key={event.id} event={event} refreshEvents={() => fetchEventsByDate(date!)} />
+                            <EventCard key={event.id} event={event} refreshEvents={() => date && fetchEventsByDate(date)} />
                         ))}
                     </div>
                 </div>

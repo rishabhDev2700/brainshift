@@ -21,10 +21,11 @@ const eventFormSchema = z.object({
 type EventFormData = z.infer<typeof eventFormSchema>;
 
 interface EventFormProps {
+    fetchEvents: () => void;
     id?: number;
 }
 
-export function EventForm({ id }: EventFormProps) {
+export function EventForm({ fetchEvents, id }: EventFormProps) {
     const [loading, setLoading] = useState(false)
     const { register, handleSubmit, reset, formState: { errors } } = useForm<EventFormData>({
         resolver: zodResolver(eventFormSchema),
@@ -55,6 +56,7 @@ export function EventForm({ id }: EventFormProps) {
             } else {
                 await dataService.addEvent({ ...data, date: utcDate.toISOString() });
             }
+            fetchEvents();
             setLoading(false)
             toast.success("Event Saved")
         } catch (error) {

@@ -16,5 +16,14 @@ export function utcToLocalDateTime(utcString: string): string {
 
 export function localDateTimeToUTC(input: string): Date {
   const localDate = new Date(input);
-  return new Date(localDate.toISOString());
+  // Construct a new Date object using the local date components
+  // This avoids timezone interpretation issues when creating the Date object
+  const year = localDate.getFullYear();
+  const month = localDate.getMonth();
+  const day = localDate.getDate();
+  const hours = localDate.getHours();
+  const minutes = localDate.getMinutes();
+
+  // Create a UTC date from the local components
+  return new Date(Date.UTC(year, month, day, hours, minutes));
 }

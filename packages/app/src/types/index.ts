@@ -24,3 +24,16 @@ export interface EventSchema {
     description: string;
     date: string;
 }
+
+export interface SessionSchema {
+  id?: number;
+  targetType: "task" | "subtask";
+  targetId?: number;
+  startTime: string;
+  endTime?: string;
+  duration?: number;
+  isCancelled?: boolean;
+  isPomodoro?: boolean;
+  completed?: boolean;
+  userId?: number;
+}

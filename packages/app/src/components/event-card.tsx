@@ -12,6 +12,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { dataService } from "@/services/api-service"
+import { EventForm } from "./forms/event-form"
 
 interface EventCardProps {
     event: EventSchema;
@@ -31,17 +32,27 @@ function EventCard({ event, refreshEvents }: EventCardProps) {
                 <CardTitle>{event.title}</CardTitle>
                 <CardDescription className="text-sm text-gray-500">
                     {event.date && <span>{new Date(event.date).toLocaleDateString()}</span>}
-                    {/* {event.startTime && <span>{new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
-                    {event.endTime && <span> - {new Date(event.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
-                    {event.eventType && <span className="ml-2 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-medium">{event.eventType}</span>} */}
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex justify-between items-center">
                 {event.description && <p>{event.description}</p>}
                 <div className="space-x-2">
-                    <Button variant="outline" size="sm" >
-                        Edit
-                    </Button>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" >
+                                Edit
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Edit Event</DialogTitle>
+                                <DialogDescription>
+                                    Edit the details for your event.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <EventForm id={event.id} fetchEvents={refreshEvents} />
+                        </DialogContent>
+                    </Dialog>
                     <Dialog>
                         <DialogTrigger asChild><Button variant="destructive" size="sm">Delete</Button></DialogTrigger>
                         <DialogContent>

@@ -10,7 +10,7 @@ const app = new Hono<{ Variables: HonoVariables }>();
 const SessionSchema = z.object({
   id: z.int().optional(),
   targetType: z.enum(["task", "subtask"]),
-  targetId: z.int(),
+  targetId: z.int().optional(),
   startTime: z.string(),
   endTime: z.string().optional(),
   duration: z.int().min(5),
@@ -97,7 +97,7 @@ app
       if (!session) {
         return c.json({ message: "Something went wrong" }, 404);
       } else {
-        return c.json({ message: "Session added successfully" });
+        return c.json(session); 
       }
     } catch (err) {
       const error = err as DrizzleError;

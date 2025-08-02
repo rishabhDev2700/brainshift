@@ -1,5 +1,5 @@
 import axios from "axios";
-import { type TaskSchema, type GoalSchema, type EventSchema } from "@/types";
+import { type TaskSchema, type GoalSchema, type EventSchema, type SessionSchema } from "@/types";
 const baseURL = import.meta.env.VITE_API_DOMAIN;
 console.log(baseURL);
 const authClient = axios.create({
@@ -238,6 +238,67 @@ export const dataService = {
   deleteGoal: async (id: number) => {
     try {
       const res = await dataClient.delete(`/goals/${id}`);
+      return res;
+    } catch (err) {
+      console.log(err);
+    }
+  },
+
+  // Sessions resource
+
+  getSessions: async (): Promise<SessionSchema[]> => {
+    try {
+      const res = await dataClient.get<SessionSchema[]>("/sessions");
+      return res.data;
+    } catch (err) {
+      console.log(err);
+      return [];
+    }
+  },
+  getSessionById: async (id: number): Promise<SessionSchema> => {
+    try {
+      const res = await dataClient.get<SessionSchema>(`/sessions/${id}`);
+      return res.data;
+    } catch (err) {
+      console.log(err);
+      throw Error("Invalid Error");
+    }
+  },
+  addSession: async (data: SessionSchema) => {
+    try {
+      const res = await dataClient.post("/sessions", data);
+      return res;
+    } catch (err) {
+      console.log(err);
+    }
+  },
+  updateSession: async (id: number, data: SessionSchema) => {
+    try {
+      const res = await dataClient.put(`/sessions/${id}`, data);
+      return res;
+    } catch (err) {
+      console.log(err);
+    }
+  },
+  deleteSession: async (id: number) => {
+    try {
+      const res = await dataClient.delete(`/sessions/${id}`);
+      return res;
+    } catch (err) {
+      console.log(err);
+    }
+  },
+  cancelSession: async (id: number) => {
+    try {
+      const res = await dataClient.patch(`/sessions/${id}/cancel`);
+      return res;
+    } catch (err) {
+      console.log(err);
+    }
+  },
+  completeSession: async (id: number, completed: boolean) => {
+    try {
+      const res = await dataClient.patch(`/sessions/${id}/completed`, { completed });
       return res;
     } catch (err) {
       console.log(err);

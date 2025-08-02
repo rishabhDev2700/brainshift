@@ -51,7 +51,7 @@ app
             and(
               eq(EventsTable.userId, c.get("user").id),
               gte(EventsTable.date, dayStart),
-              lt(EventsTable.date, new Date(dayEnd.getTime()))
+              lt(EventsTable.date, new Date(dayEnd.getTime() + 1))
             )
           );
         console.log(events);
