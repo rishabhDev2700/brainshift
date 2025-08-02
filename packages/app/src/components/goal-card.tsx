@@ -60,7 +60,7 @@ function GoalCard({ goal, refresh }: { goal: GoalSchema, refresh: () => Promise<
                                         Cancel
                                     </Button>
                                 </DialogClose>
-                                <Button variant="destructive" onClick={() => handleDelete(goal.id)}>Delete</Button>
+                                <Button variant="destructive" onClick={async() => handleDelete(goal.id)}>Delete</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>

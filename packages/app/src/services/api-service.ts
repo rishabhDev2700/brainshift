@@ -1,7 +1,7 @@
 import axios from "axios";
 import { type TaskSchema, type GoalSchema, type EventSchema } from "@/types";
 const baseURL = import.meta.env.VITE_API_DOMAIN;
-
+console.log(baseURL);
 const authClient = axios.create({
   baseURL: baseURL,
   timeout: 10000,
@@ -78,7 +78,9 @@ export const dataService = {
   },
   getEventsByDate: async (date: string): Promise<EventSchema[]> => {
     try {
-      const res = await dataClient.get<EventSchema[]>(`/events/search?date=${date}`);
+      const res = await dataClient.get<EventSchema[]>(
+        `/events/search?date=${date}`
+      );
       return res.data;
     } catch (err) {
       console.log(err);
@@ -209,7 +211,7 @@ export const dataService = {
       throw Error("Invalid Error");
     }
   },
-  addGoal: async (data:GoalSchema) => {
+  addGoal: async (data: GoalSchema) => {
     try {
       const res = await dataClient.post("/goals", data);
       return res;
