@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, PlusCircle } from "lucide-react"
 import { Link } from 'react-router-dom'
 import { dataService } from '@/services/api-service'
@@ -21,20 +20,11 @@ function TasksPage() {
         try {
             const response = await dataService.getTasks();
             console.log(response)
-            setTasks(response??[]);
+            setTasks(response ?? []);
         } catch (error) {
             console.error("Error fetching tasks:", error);
         } finally {
             setLoading(false)
-        }
-    };
-
-    const handleDeleteTask = async (id: number) => {
-        try {
-            await dataService.deleteTask(id);
-            fetchTasks();
-        } catch (error) {
-            console.error("Error deleting task:", error);
         }
     };
 

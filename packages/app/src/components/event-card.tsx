@@ -19,7 +19,8 @@ interface EventCardProps {
 }
 
 function EventCard({ event, refreshEvents }: EventCardProps) {
-    async function handleDelete(id: number) {
+    async function handleDelete(id: number | undefined) {
+        if (!id) return
         await dataService.deleteEvent(id);
         refreshEvents();
     }
