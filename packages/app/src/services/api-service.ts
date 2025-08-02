@@ -62,6 +62,14 @@ export const authService = {
     const res = await authClient.post("/auth/register", data);
     return res;
   },
+  googleLogin: async (token: string) => {
+    try {
+      const res = await authClient.post("/auth/google", { token });
+      return res;
+    } catch (err) {
+      console.log(err);
+    }
+  },
 };
 
 export const dataService = {

@@ -4,8 +4,12 @@ import { UserTable } from "../db/schemas/users";
 import { eq } from "drizzle-orm";
 import type { SignatureKey } from "hono/utils/jwt/jws";
 import { db } from "../db/db";
+import { OAuth2Client } from "google-auth-library";
 
 const app = new Hono();
+
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 app
   .post("/register", async (c: Context) => {
@@ -69,6 +73,54 @@ app
     const token = await sign(payload, process.env.JWT_SECRET as SignatureKey);
 
     return c.json({ token });
+  })
+  .post("/google", async (c: Context) => {
+    const { token: idToken } = await c.req.json();
+
+    if (!idToken) {
+      return c.json({ error: "Google ID token is required" }, 400);
+    }
+
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken,
+        audience: GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+
+      if (!payload || !payload.email) {
+        return c.json({ error: "Invalid Google ID token payload" }, 400);
+      }
+
+      const email = payload.email;
+      const fullName = payload.name || email;
+
+      let [user] = await db.select().from(UserTable).where(eq(UserTable.email, email));
+
+      if (!user) {
+        [user] = await db.insert(UserTable).values({
+          fullName,
+          email,
+          password: "", 
+        }).returning();
+      }
+
+      if (!user) {
+        return c.json({ error: "Failed to create or retrieve user" }, 500);
+      }
+
+      const jwtPayload = {
+        sub: user.id,
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24 hours
+      };
+      const token = await sign(jwtPayload, process.env.JWT_SECRET as SignatureKey);
+
+      return c.json({ token });
+
+    } catch (error) {
+      console.error("Google authentication error:", error);
+      return c.json({ error: "Google authentication failed" }, 401);
+    }
   });
 
 export default app;

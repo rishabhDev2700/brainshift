@@ -13,34 +13,38 @@ import { ThemeProvider } from './contexts/theme-provider';
 import EventDetailsPage from './pages/event-details.page';
 import GoalsPage from './pages/goals.page';
 import GoalFormPage from './pages/goal-form.page';
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/sonner";
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
 function App() {
   return (
-    <BrowserRouter>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <AuthProvider>
-          <Routes>
-            <Route path="/" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route element={<PrivateRoute />}>
-              <Route path='dashboard' element={<Layout />}>
-                <Route index element={<Dashboard />} />
-                <Route path='myday' element={<MyDayPage />} />
-                <Route path='tasks/new' element={<TaskFormPage />} />
-                <Route path='tasks/:id' element={<TaskFormPage />} />
-                <Route path='tasks' element={<TasksPage />} />
-                <Route path='goals' element={<GoalsPage />} />
-                <Route path='goals/new' element={<GoalFormPage />} />\
-                <Route path='goals/:id' element={<GoalFormPage />} />
-                <Route path='calendar' element={<CalendarPage />} />
-                <Route path="calendar/:id" element={<EventDetailsPage />} />
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <BrowserRouter>
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route element={<PrivateRoute />}>
+                <Route path='dashboard' element={<Layout />}>
+                  <Route index element={<Dashboard />} />
+                  <Route path='myday' element={<MyDayPage />} />
+                  <Route path='tasks/new' element={<TaskFormPage />} />
+                  <Route path='tasks/:id' element={<TaskFormPage />} />
+                  <Route path='tasks' element={<TasksPage />} />
+                  <Route path='goals' element={<GoalsPage />} />
+                  <Route path='goals/new' element={<GoalFormPage />} />\
+                  <Route path='goals/:id' element={<GoalFormPage />} />
+                  <Route path='calendar' element={<CalendarPage />} />
+                  <Route path="calendar/:id" element={<EventDetailsPage />} />
+                </Route>
               </Route>
-            </Route>
-          </Routes>
-        </AuthProvider>
-      </ThemeProvider>
-      <Toaster richColors />
-    </BrowserRouter>
+            </Routes>
+          </AuthProvider>
+        </ThemeProvider>
+        <Toaster richColors />
+      </BrowserRouter>
+    </GoogleOAuthProvider>
   );
 }
 
