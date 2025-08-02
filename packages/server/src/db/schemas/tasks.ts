@@ -16,7 +16,7 @@ export const TasksTable = pgTable("tasks", {
   ...basic_info,
   ...timestamps,
   priority: integer(),
-  deadline: timestamp(''),
+  deadline: timestamp({withTimezone:true}),
   userId: integer("user_id")
     .notNull()
     .references(() => UserTable.id),

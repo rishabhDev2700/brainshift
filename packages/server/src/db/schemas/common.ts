@@ -15,6 +15,6 @@ export const basic_info = {
   status: Status().default("NOT STARTED"),
 };
 export const timestamps = {
-  updatedAt: timestamp("updated_at").$onUpdate(() => new Date()),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at",{withTimezone:true}).$onUpdate(() => new Date()),
+  createdAt: timestamp("created_at",{withTimezone:true}).defaultNow().notNull(),
 };

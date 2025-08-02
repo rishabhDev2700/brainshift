@@ -8,8 +8,10 @@ export const SubtaskTable = pgTable("subtasks", {
   ...basic_info,
   ...timestamps,
   priority: integer(),
-  deadline: timestamp(),
-  taskId: integer("task_id").references(() => TasksTable.id, { onDelete: "cascade" }),
+  deadline: timestamp({ withTimezone: true }),
+  taskId: integer("task_id").references(() => TasksTable.id, {
+    onDelete: "cascade",
+  }),
 });
 
 export const subtasksToTasks = relations(SubtaskTable, ({ one }) => ({

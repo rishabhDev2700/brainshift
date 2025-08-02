@@ -12,7 +12,7 @@ export const EventsTable = pgTable("events", {
   id: serial().primaryKey(),
   title: varchar().notNull(),
   description: varchar().notNull(),
-  date: timestamp().notNull(),
+  date: timestamp({ withTimezone: true }).notNull(),
   userId: integer("user_id")
     .notNull()
     .references(() => UserTable.id, { onDelete: "cascade" }),
