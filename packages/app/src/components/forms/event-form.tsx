@@ -64,7 +64,6 @@ export function EventForm({ id }: EventFormProps) {
     };
     return (
         <>
-            <h1 className="text-emerald-600 font-semibold text-xl md:text-3xl mb-4">{id ? "Edit Event" : "New Event"}</h1>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
                     <Label className="mb-2" htmlFor="name">Name</Label>

@@ -42,7 +42,7 @@ function CalendarPage() {
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Create New Event</DialogTitle>
-                            <DialogDescription>"Fill in the details for your new calendar event.
+                            <DialogDescription>Fill in the details for your new calendar event.
                             </DialogDescription>
                         </DialogHeader>
                         <EventForm />
@@ -56,10 +56,10 @@ function CalendarPage() {
                         mode="single"
                         selected={date}
                         onSelect={setDate}
-                        className="duration-200 w-full"
+                        className="duration-200 w-full mb-4"
                     />
                 </div>
-                <div>
+                <div className="mt-4">
                     <h3 className="text-xl font-semibold mb-4">Events for {date?.toLocaleDateString() || 'Selected Date'}</h3>
                     <div className="space-y-4">
                         {Array.isArray(events) && events.map(event => (
