@@ -55,17 +55,17 @@ function MyDayPage() {
 
     return (
         <div className="p-4 md:p-8 space-y-8">
-            <h2 className="text-3xl font-bold tracking-tight">My Day</h2>
+            <h2 className="text-xl md:text-3xl font-bold tracking-tight">My Day</h2>
 
             <section>
-                <h3 className="text-2xl font-semibold mb-4">Tasks Due Soon</h3>
+                <h3 className="text-lg md:text-2xl font-semibold mb-4">Tasks Due Soon</h3>
                 {tasksDueSoon.length > 0 ? (
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {tasksDueSoon.map(task => (
                             <Card key={task.id}>
                                 <CardHeader>
                                     <CardTitle>{task.title}</CardTitle>
-                                    <CardDescription>{task.description}</CardDescription>
+                                    <CardDescription className='text-xs md:text-md'>{task.description}</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="flex justify-between items-center">
@@ -86,19 +86,19 @@ function MyDayPage() {
                         ))}
                     </div>
                 ) : (
-                    <p className="text-gray-500">No tasks due soon. Great job!</p>
+                    <p className="text-gray-500 text-xs md:text-md">No tasks due soon. Great job!</p>
                 )}
             </section>
 
             <section>
-                <h3 className="text-2xl font-semibold mb-4">Achievable Goals</h3>
+                <h3 className="text-lg md:text-2xl font-semibold mb-4">Achievable Goals</h3>
                 {achievableGoals.length > 0 ? (
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {achievableGoals.map(goal => (
                             <Card key={goal.id}>
                                 <CardHeader>
                                     <CardTitle>{goal.title}</CardTitle>
-                                    {goal.description && <CardDescription>{goal.description}</CardDescription>}
+                                    {goal.description && <CardDescription className='text-xs md:text-md'>{goal.description}</CardDescription>}
                                 </CardHeader>
                                 <CardContent>
                                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${goal.status === "NOT STARTED" ? "bg-gray-200 text-gray-800" :
@@ -116,7 +116,7 @@ function MyDayPage() {
                         ))}
                     </div>
                 ) : (
-                    <p className="text-gray-500">No goals identified as quickly achievable.</p>
+                    <p className="text-gray-500 text-xs md:text-md">No goals identified as quickly achievable.</p>
                 )}
             </section>
         </div>

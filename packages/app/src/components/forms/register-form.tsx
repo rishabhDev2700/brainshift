@@ -5,6 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { authService } from "@/services/api-service";
+import { useAuth } from "@/hooks/use-auth";
+import { toast } from "sonner";
 
 const registerSchema = z.object({
     fullName: z.string().min(2),
@@ -17,15 +19,22 @@ export function RegisterForm() {
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: zodResolver(registerSchema)
     });
+    const { login } = useAuth()
 
     const onSubmit = async (data: any) => {
         try {
             const res = await authService.register(data);
-            if (!res)
-                navigate('/login');
+            if (res) {
+                login(res?.data.token)
+                toast.success("Logged in Successfully", { description: "Welcome" })
+                navigate('/dashboard');
+            }
+
             console.log(res)
 
         } catch (err) {
+            toast.success("Something went wrong", { description: "Please try again" })
+
             console.error(err)
         }
     };

@@ -38,27 +38,27 @@ function Dashboard() {
 
     return (
         <div className="p-4 md:p-8 space-y-8">
-            <h2 className="text-3xl font-bold tracking-tight">Dashboard Overview</h2>
+            <h2 className="text-xl md:text-3xl font-bold tracking-tight">Dashboard Overview</h2>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 min-w-full max-w-screen content-center">
                 <StatCard title="Tasks Completed" value={tasksCompleted.toString()} />
                 <StatCard title="Time Spent" value={`${timeSpent} hours`} />
                 <StatCard title="Goals Achieved" value={`${goalsAchieved}/${totalGoals}`} />
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-2">
-                <div className="p-4 border rounded-lg shadow-sm">
-                    <h3 className="text-xl font-semibold mb-4">Tasks Completed per day</h3>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2 w-full">
+                <div className="p-4 border rounded-lg shadow-sm overflow-x-auto">
+                    <h3 className="text-lg md:text-xl font-semibold mb-4">Tasks Completed per day</h3>
                     <TasksChart data={chartData} />
                 </div>
-                <div className="p-4 border rounded-lg shadow-sm">
-                    <h3 className="text-xl font-semibold mb-4">Time Spent Overview</h3>
+                <div className="p-4 border rounded-lg shadow-sm overflow-x-auto">
+                    <h3 className="text-lg md:text-xl font-semibold mb-4">Time Spent Overview</h3>
                     <TimeChart data={timeData} />
                 </div>
             </div>
 
             <div className="p-4 border rounded-lg shadow-sm">
-                <h3 className="text-xl font-semibold mb-4">Goals Progress</h3>
+                <h3 className="text-lg md:text-xl font-semibold mb-4">Goals Progress</h3>
                 <GoalsProgress achieved={goalsAchieved} total={totalGoals} />
             </div>
         </div>

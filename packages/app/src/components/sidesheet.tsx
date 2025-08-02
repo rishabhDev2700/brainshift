@@ -2,6 +2,7 @@ import {
     Sheet,
     SheetContent,
     SheetDescription,
+    SheetFooter,
     SheetHeader,
     SheetTitle,
     SheetTrigger,
@@ -10,6 +11,7 @@ import { Button } from "./ui/button"
 import { MenuIcon } from "lucide-react"
 import { appRoutes } from "@/lib/data"
 import { NavLink } from "react-router-dom"
+import { ModeToggle } from "./mode-toggle"
 
 
 function SideSheet() {
@@ -28,6 +30,9 @@ function SideSheet() {
                         {appRoutes.map((r, i) => <NavLink key={i} className={`py-2 px-4 border-2 border-transparent hover:border-emerald-700 duration-100 ease-linear hover:bg-emerald-600 hover:text-white my-2 rounded-xl`} to={r.url}>{r.text}</NavLink>)}
                     </SheetDescription>
                 </SheetHeader>
+                <SheetFooter>
+                    <ModeToggle/>
+                </SheetFooter>
             </SheetContent>
         </Sheet>
     )

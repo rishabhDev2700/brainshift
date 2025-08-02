@@ -36,7 +36,7 @@ function TasksPage() {
     return (
         <div className="p-4 md:p-8 space-y-8">
             <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-bold tracking-tight">Your Tasks</h2>
+                <h2 className="text-xl md:text-3xl font-bold tracking-tight">Your Tasks</h2>
                 <Link to="/dashboard/tasks/new">
                     <Button className="bg-emerald-600 hover:bg-emerald-700">
                         <PlusCircle className="mr-2 h-4 w-4" /> Add New Task

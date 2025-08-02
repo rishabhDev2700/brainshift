@@ -13,7 +13,7 @@ import { ThemeProvider } from './contexts/theme-provider';
 import EventDetailsPage from './pages/event-details.page';
 import GoalsPage from './pages/goals.page';
 import GoalFormPage from './pages/goal-form.page';
-
+import { Toaster } from "@/components/ui/sonner"
 function App() {
   return (
     <BrowserRouter>
@@ -39,6 +39,7 @@ function App() {
           </Routes>
         </AuthProvider>
       </ThemeProvider>
+      <Toaster richColors />
     </BrowserRouter>
   );
 }

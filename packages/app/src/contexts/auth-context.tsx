@@ -1,6 +1,7 @@
 
 import { createContext, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 interface AuthContextType {
   token: string | null;
@@ -22,6 +23,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setToken(null);
     localStorage.removeItem('token');
+    toast.success("Logged out successfully")
     navigate('/');
   };
 

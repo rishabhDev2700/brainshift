@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { authService } from "@/services/api-service"
+import { toast } from "sonner"
 
 const loginSchema = z.object({
     email: z.string().email(),
@@ -24,10 +25,12 @@ export function LoginForm() {
             const response = await authService.login(data);
             if (response?.data.token) {
                 login(response?.data.token);
+                toast.success("Logged in Successfully", { description: "Welcome" })
                 navigate('/dashboard');
             }
-            
+
         } catch (err) {
+            toast.success("Something went wrong", { description: "Please try again" })
             console.error(err)
         }
     };

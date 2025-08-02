@@ -1,21 +1,21 @@
 import { Hono } from "hono";
 import type { HonoVariables } from "../types/hono";
 import { db } from "../db/db";
-import {GoalsTable} from "../db/schemas/goals";
+import { GoalsTable } from "../db/schemas/goals";
 import { and, DrizzleError, eq } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
 import * as z from "zod";
 
 const app = new Hono<{ Variables: HonoVariables }>();
 const GoalSchema = z.object({
-    id: z.number().optional(),
-    title: z.string().min(1, "Name is required"),
-    description: z.string(),
-    parentId: z.number().optional(),
-    type: z.enum(["SHORT", "LONG"]),
-    status: z.enum(["NOT STARTED", "IN PROGRESS", "COMPLETED", "CANCELLED"]),
-    priority: z.number(),
-    deadline: z.string(),
+  id: z.number().optional(),
+  title: z.string().min(1, "Name is required"),
+  description: z.string(),
+  parentId: z.number().optional(),
+  type: z.enum(["SHORT", "LONG"]),
+  status: z.enum(["NOT STARTED", "IN PROGRESS", "COMPLETED", "CANCELLED"]),
+  priority: z.number(),
+  deadline: z.string(),
 });
 
 type Goal = z.infer<typeof GoalSchema>;
@@ -100,11 +100,20 @@ app
   .put("/:id", zValidator("json", GoalSchema), async (c) => {
     try {
       const validated = c.req.valid("json");
-      const {id} = c.req.param();
+      const { id } = c.req.param();
       const [goal] = await db
         .update(GoalsTable)
-        .set({ ...validated, userId: c.get("user").id,deadline:new Date(validated.deadline) })
-        .where(and(eq(GoalsTable.userId, c.get("user").id),eq(GoalsTable.id,Number(id))))
+        .set({
+          ...validated,
+          userId: c.get("user").id,
+          deadline: new Date(validated.deadline),
+        })
+        .where(
+          and(
+            eq(GoalsTable.userId, c.get("user").id),
+            eq(GoalsTable.id, Number(id))
+          )
+        )
         .returning();
       if (!goal) {
         return c.json({ message: "Something went wrong" });

@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom'
 
 export default function GoalFormPage() {
     const [goals, setGoals] = useState<GoalSchema[]>([]);
+    const id = Number(useParams().id);
     useEffect(() => {
         fetchGoals();
     }, []);
@@ -13,12 +14,11 @@ export default function GoalFormPage() {
     const fetchGoals = async () => {
         try {
             const response = await dataService.getGoals();
-            setGoals(response);
+            setGoals(response.filter(g => g.id !== id));
         } catch (error) {
             console.error("Error fetching tasks:", error);
         }
     };
-    const id = Number(useParams().id);
 
     return (
         <div>

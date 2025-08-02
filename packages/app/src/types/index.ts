@@ -5,7 +5,7 @@ export interface TaskSchema {
   status: "NOT STARTED"|"IN PROGRESS"|"COMPLETED"|"CANCELLED";
   priority: number;
   deadline: string;
-  goalId: number;
+  goalId?: number;
 }
 
 export interface GoalSchema {

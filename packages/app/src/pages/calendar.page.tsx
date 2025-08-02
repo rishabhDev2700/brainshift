@@ -39,7 +39,7 @@ function CalendarPage() {
     return (
         <div className="p-4 md:p-8 space-y-8">
             <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-bold tracking-tight">Calendar</h2>
+                <h2 className="text-xl md:text-3xl font-bold tracking-tight">Calendar</h2>
                 <Dialog>
                     <DialogTrigger asChild>
                         <Button className="bg-emerald-600 hover:bg-emerald-800"><PlusIcon className="mr-2 h-4 w-4" />New Event</Button>
