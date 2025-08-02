@@ -106,7 +106,7 @@ export function GoalForm({ fetchGoals, goals, id }: GoalFormProps) {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem key={-1} value="-1">None</SelectItem>
-                                    {Array.isArray(goals) ? goals.map(g => <SelectItem key={g.id} value={g.id}>{g.title} {g.id}</SelectItem>) : "No Goal"}
+                                    {Array.isArray(goals) ? goals.map(g => <SelectItem key={g.id} value={g.id.toString()}>{g.title}</SelectItem>) : "No Goal"}
                                 </SelectContent>
                             </Select>
                         )}

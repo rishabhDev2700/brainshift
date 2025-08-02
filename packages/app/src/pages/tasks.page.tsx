@@ -1,26 +1,31 @@
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { PlusCircle } from "lucide-react"
+import { Loader2, PlusCircle } from "lucide-react"
 import { Link } from 'react-router-dom'
 import { dataService } from '@/services/api-service'
 import type { TaskSchema } from '@/types'
+import TaskCard from "@/components/task-card";
 
 
 function TasksPage() {
     const [tasks, setTasks] = useState<TaskSchema[]>([]);
+    const [loading, setLoading] = useState<boolean>(true)
 
     useEffect(() => {
         fetchTasks();
     }, []);
 
     const fetchTasks = async () => {
+        setLoading(true)
         try {
             const response = await dataService.getTasks();
             console.log(response)
             setTasks(response??[]);
         } catch (error) {
             console.error("Error fetching tasks:", error);
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -45,34 +50,9 @@ function TasksPage() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {tasks.length > 0 ? (
+                {loading ? <Loader2 color='green' className='animate-spin fixed top-1/2 left-1/2 scale-200' /> : tasks.length > 0 ? (
                     tasks.map(task => (
-                        <Card key={task.id} className="flex flex-col">
-                            <CardHeader>
-                                <CardTitle>{task.title}</CardTitle>
-                                <CardDescription>{task.description}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex-grow flex flex-col justify-end">
-                                <div className="flex justify-between items-center">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${task.status === "NOT STARTED" ? "bg-gray-200 text-gray-800" :
-                                        task.status === "IN PROGRESS" ? "bg-blue-200 text-blue-800" : task.status === "COMPLETED" ? "bg-green-200 text-green-800" : "bg-amber-200 text-red-80"
-                                        }`}>
-                                        {task.status}
-                                    </span>
-                                    <span className="text-sm text-gray-500">Due: {new Date(task.deadline).toLocaleDateString()}</span>
-                                </div>
-                                <div className="flex mt-4 space-x-2">
-                                    <Link to={`/dashboard/tasks/${task.id}`} className="flex-grow">
-                                        <Button variant="outline" className="w-full border-emerald-600 text-emerald-600 hover:bg-emerald-50">
-                                            View Details
-                                        </Button>
-                                    </Link>
-                                    <Button variant="destructive" onClick={() => handleDeleteTask(task.id as number)}>
-                                        Delete
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <TaskCard key={task.id} task={task} refresh={fetchTasks} />
                     ))
                 ) : (
                     <p className="text-gray-500">No tasks found. Add a new task to get started!</p>

@@ -3,7 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import type { HonoVariables } from "../types/hono";
 import { db } from "../db/db";
 import { and, DrizzleError, eq, gte, lt } from "drizzle-orm";
-import {EventsTable} from "../db/schemas/events";
+import { EventsTable } from "../db/schemas/events";
 import * as z from "zod";
 
 const app = new Hono<{ Variables: HonoVariables }>();
@@ -31,6 +31,37 @@ app
       console.log(error);
     }
   })
+  .get(
+    "/search",
+    zValidator(
+      "query",
+      z.object({
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      })
+    ),
+    async (c) => {
+      try {
+        const { date } = c.req.valid("query");
+        const dayStart = new Date(`${date}T00:00:00.000Z`);
+        const dayEnd = new Date(`${date}T23:59:59.999Z`);
+        const events = await db
+          .select()
+          .from(EventsTable)
+          .where(
+            and(
+              eq(EventsTable.userId, c.get("user").id),
+              gte(EventsTable.date, dayStart),
+              lt(EventsTable.date, new Date(dayEnd.getTime()))
+            )
+          );
+        console.log(events);
+        return c.json(events);
+      } catch (err) {
+        const error = err as DrizzleError;
+        console.log(error);
+      }
+    }
+  )
   .get("/:id", async (c) => {
     try {
       const { id } = c.req.param();
@@ -118,36 +149,6 @@ app
       c.status(500);
       return c.json({ message: "Internal Server Error" });
     }
-  })
-  .get(
-    "/search",
-    zValidator(
-      "query",
-      z.object({
-        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-      })
-    ),
-    async (c) => {
-      try {
-        const { date } = c.req.valid("query");
-        const dayStart = new Date(`${date}T00:00:00.000Z`);
-        const dayEnd = new Date(`${date}T23:59:59.999Z`);
-        const events = await db
-          .select()
-          .from(EventsTable)
-          .where(
-            and(
-              eq(EventsTable.userId, c.get("user").id),
-              gte(EventsTable.date, dayStart),
-              lt(EventsTable.date, new Date(dayEnd.getTime() + 1))
-            )
-          );
-        return c.json(events);
-      } catch (err) {
-        const error = err as DrizzleError;
-        console.log(error);
-      }
-    }
-  );
+  });
 
 export default app;

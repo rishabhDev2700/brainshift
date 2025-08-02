@@ -8,17 +8,13 @@ import { TasksTable } from "../db/schemas/tasks";
 import { SubtaskTable } from "../db/schemas/subtasks";
 const app = new Hono<{ Variables: HonoVariables }>();
 const TaskSchema = z.object({
-    id:z.number().optional(),
-    title: z.string().min(1, "Title is required"),
-    description: z.string().optional(),
-    status: z.enum([
-        "NOT STARTED",
-        "IN PROGRESS",
-        "COMPLETED",
-        "CANCELLED",]),
-    priority: z.number().min(0).max(4),
-    deadline: z.string(),
-    goalId: z.number().optional(),
+  id: z.number().optional(),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  status: z.enum(["NOT STARTED", "IN PROGRESS", "COMPLETED", "CANCELLED"]),
+  priority: z.number().min(0).max(4),
+  deadline: z.string(),
+  goalId: z.number().optional(),
 });
 
 const SubtaskSchema = z.object({
@@ -58,7 +54,6 @@ app
           eq(tasks.id, Number(id)), eq(tasks.userId, c.get("user").id)
         ),
       });
-      console.log(task);
       return c.json(task);
     } catch (err) {
       const error = err as DrizzleError;
@@ -97,6 +92,7 @@ app
           ...validated,
           deadline: new Date(validated.deadline),
           userId: c.get("user").id,
+          goalId: validated.goalId || null,
         })
         .returning();
       if (!task) {
@@ -106,7 +102,7 @@ app
       }
     } catch (err) {
       const error = err as DrizzleError;
-      console.log(err);
+      console.log(error);
       c.status(500);
       return c.json({ message: "Internal Server Error" });
     }
@@ -114,6 +110,7 @@ app
   .put("/:id", zValidator("json", TaskSchema), async (c) => {
     try {
       const validated = c.req.valid("json");
+      console.log(validated);
       const id = parseInt(c.req.param().id);
       const [task] = await db
         .update(TasksTable)
@@ -122,6 +119,7 @@ app
           ...validated,
           userId: c.get("user").id,
           deadline: new Date(validated.deadline),
+          goalId: validated.goalId || null,
         })
         .where(
           and(

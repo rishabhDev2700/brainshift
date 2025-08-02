@@ -1,10 +1,10 @@
 import axios from "axios";
-import { type TaskSchema, type GoalSchema } from "@/types";
+import { type TaskSchema, type GoalSchema, type EventSchema } from "@/types";
 const baseURL = import.meta.env.VITE_API_DOMAIN;
 
 const authClient = axios.create({
   baseURL: baseURL,
-  timeout: 5000,
+  timeout: 10000,
   headers: {
     "Content-Type": "application/json",
     "X-Requested-With": "XMLHttpRequest",
@@ -13,7 +13,7 @@ const authClient = axios.create({
 
 const dataClient = axios.create({
   baseURL: baseURL,
-  timeout: 5000,
+  timeout: 10000,
   headers: {
     "Content-Type": "application/json",
     "X-Requested-With": "XMLHttpRequest",
@@ -67,23 +67,34 @@ export const authService = {
 export const dataService = {
   // Events Resource
 
-  getEvents: async () => {
+  getEvents: async (): Promise<EventSchema[]> => {
     try {
-      const res = await dataClient.get("/events");
-      return res;
+      const res = await dataClient.get<EventSchema[]>("/events");
+      return res.data;
     } catch (err) {
       console.log(err);
+      return [];
     }
   },
-  getEventById: async (id: number) => {
+  getEventsByDate: async (date: string): Promise<EventSchema[]> => {
     try {
-      const res = await dataClient.get(`/events/${id}`);
-      return res;
+      const res = await dataClient.get<EventSchema[]>(`/events/search?date=${date}`);
+      return res.data;
     } catch (err) {
       console.log(err);
+      return [];
     }
   },
-  addEvent: async (data: {}) => {
+  getEventById: async (id: number): Promise<EventSchema> => {
+    try {
+      const res = await dataClient.get<EventSchema>(`/events/${id}`);
+      return res.data;
+    } catch (err) {
+      console.log(err);
+      throw Error("Invalid Error");
+    }
+  },
+  addEvent: async (data: EventSchema) => {
     try {
       const res = await dataClient.post("/events", data);
       return res;
@@ -91,7 +102,7 @@ export const dataService = {
       console.log(err);
     }
   },
-  updateEvent: async (id: number, data: {}) => {
+  updateEvent: async (id: number, data: EventSchema) => {
     try {
       const res = await dataClient.put(`/events/${id}`, data);
       return res;

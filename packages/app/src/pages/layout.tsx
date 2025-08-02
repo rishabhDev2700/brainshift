@@ -17,7 +17,7 @@ function Layout() {
             <SideSheet />
             <div className="w-full">
 
-                <div className='p-2 max-w-screen flex justify-end'>
+                <div className='py-2 pr-2 max-w-screen flex justify-end'>
                     <div className='w-54 flex items-center border px-4 rounded-full outline-2 focus-within:outline-emerald-600 focus-within:border-emerald-500 ring-transparent focus-visible:ring-2'>
                         <SearchIcon />
                         <Input type='text' role="searchbox" placeholder='Search' className='border-0 focus-visible:ring-0 dark:bg-neutral-950' />

@@ -28,7 +28,7 @@ const taskSchema = z.object({
     deadline: z.string().refine((val) => !isNaN(Date.parse(val)), {
         message: "Invalid date format",
     }),
-    goalId: z.number(),
+    goalId: z.union([z.number(), z.undefined()]).optional(),
 });
 
 type TaskFormValues = z.infer<typeof taskSchema>;
@@ -58,7 +58,6 @@ export function TaskForm({ id }: TaskFormProps) {
         },
     });
 
-
     useEffect(() => {
         fetchGoals()
         if (id) {
@@ -82,19 +81,23 @@ export function TaskForm({ id }: TaskFormProps) {
         setLoading(false)
     }
 
+    const [error, setError] = useState<string | null>(null)
+
     const onSubmit: SubmitHandler<TaskFormValues> = async (data) => {
-        console.log("Submitting form")
+        console.log("Submitting form", data)
         setLoading(true)
+        setError(null)
         const utcDeadline = localDateTimeToUTC(data.deadline);
         try {
             if (id) {
-                await dataService.updateTask(id, { ...data, deadline: utcDeadline.toISOString(), goalId: data.goalId });
+                await dataService.updateTask(id, { ...data, deadline: utcDeadline.toISOString(), goalId: data.goalId === -1 ? undefined : data.goalId });
             } else {
-                await dataService.addTask(data);
+                await dataService.addTask({ ...data, deadline: utcDeadline.toISOString(), goalId: data.goalId === -1 ? undefined : data.goalId });
             }
             navigate('/dashboard/tasks');
         } catch (error) {
             console.error("Error saving task:", error);
+            setError("Failed to save task. Please try again.")
         }
         finally {
             setLoading(false)
@@ -102,7 +105,7 @@ export function TaskForm({ id }: TaskFormProps) {
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="grid md:grid-cols-2 grid-rows-3 items-baseline gap-12">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid md:grid-cols-2 items-baseline gap-6 md:gap-12">
             <div>
                 <div>
                     <Label htmlFor="title" className="mb-2">Title</Label>
@@ -148,8 +151,10 @@ export function TaskForm({ id }: TaskFormProps) {
                         control={control}
                         rules={{}}
                         render={({ field }) => (
-                            <Select onValueChange={(val) => field.onChange(Number(val))}
-                                value={field.value !== undefined ? String(field.value) : undefined}>
+                            <Select
+                                onValueChange={(val) => field.onChange(Number(val))}
+                                value={field.value?.toString()}
+                            >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select goal" />
                                 </SelectTrigger>
@@ -164,16 +169,34 @@ export function TaskForm({ id }: TaskFormProps) {
                             </Select>
                         )}
                     />
-
-                    <div className="mt-4">
+                    <div>
+                        <Label className="my-2" htmlFor="priority">Priority</Label>
+                        <Controller
+                            name="priority"
+                            control={control}
+                            render={({ field }) => (
+                                <Select onValueChange={(value) => field.onChange(parseInt(value, 10))} value={field.value?.toString()}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Priority" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="0">Low</SelectItem>
+                                        <SelectItem value="1">Medium</SelectItem>
+                                        <SelectItem value="2">High</SelectItem>
+                                        <SelectItem value="3">Very High</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            )} />
+                    </div>
+                    {/* <div className="mt-4">
                         <Label className="mb-2">Estimated Time</Label>
                         <Input type="number" placeholder="In Minutes" />
-                    </div>
+                    </div> */}
                 </div>
 
             </div>
             <Button disabled={loading} type="submit" className="bg-emerald-600 hover:bg-emerald-400 md:mt-5">{loading ? <Loader2Icon className="animate-spin" /> : (id ? "Save" : "Create Task")}</Button>
-
+            {error && <p className="text-red-500 text-sm">{error}</p>}
         </form>
     )
 }

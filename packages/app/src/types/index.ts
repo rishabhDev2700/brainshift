@@ -17,3 +17,10 @@ export interface GoalSchema {
   deadline: string;
   parentId?: number;
 }
+
+export interface EventSchema {
+    id?: number;
+    title: string;
+    description: string;
+    date: string;
+}
