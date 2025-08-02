@@ -48,29 +48,31 @@ function SessionsPage() {
     };
 
     return (
-        <div className="p-4 md:p-8 space-y-8">
-            <div className="flex justify-between items-center">
-                <h2 className="text-xl md:text-3xl font-bold tracking-tight">Your Sessions</h2>
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <Button className="bg-emerald-600 hover:bg-emerald-700">
-                            <PlusCircle className="mr-2 h-4 w-4" /> Start New Session
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Start New Session</DialogTitle>
-                        </DialogHeader>
-                        <SessionStartForm onSessionStart={fetchSessions} />
-                    </DialogContent>
-                </Dialog>
-                <Button onClick={() => setShowPomodoro(!showPomodoro)} className="bg-blue-600 hover:bg-blue-700 ml-2">
-                    {showPomodoro ? "Hide Pomodoro" : "Show Pomodoro"}
-                </Button>
+        <div className="container mx-auto p-4 md:p-8 space-y-8">
+            <div className="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0">
+                <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-gray-800 dark:text-gray-100">Your Sessions</h2>
+                <div className="flex flex-col md:flex-row space-x-2 gap-4">
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button className="bg-emerald-600 hover:bg-emerald-700 w-52">
+                                <PlusCircle className="mr-2 h-4 w-4" /> Start New Session
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Start New Session</DialogTitle>
+                            </DialogHeader>
+                            <SessionStartForm onSessionStart={fetchSessions} />
+                        </DialogContent>
+                    </Dialog>
+                    <Button onClick={() => setShowPomodoro(!showPomodoro)} className="bg-blue-600 hover:bg-blue-700 w-52">
+                        {showPomodoro ? "Hide Pomodoro" : "Show Pomodoro"}
+                    </Button>
+                </div>
             </div>
 
             {showPomodoro && (
-                <div className="flex justify-center">
+                <div className="flex justify-center mb-8">
                     <Pomodoro />
                 </div>
             )}
@@ -81,16 +83,16 @@ function SessionsPage() {
                 ) : sessions.length > 0 ? (
                     sessions.map((session) => (
                         <Card key={session.id}>
-                            <CardHeader>
-                                <CardTitle>Session ID: {session.id}</CardTitle>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200">Session ID: {session.id}</CardTitle>
                             </CardHeader>
-                            <CardContent>
-                                <p>Type: {session.targetType}</p>
-                                <p>Target ID: {session.targetId}</p>
-                                <p>Start Time: {new Date(session.startTime).toLocaleString()}</p>
-                                {session.endTime && <p>End Time: {new Date(session.endTime).toLocaleString()}</p>}
-                                {session.duration && <p>Duration: {session.duration} minutes</p>}
-                                <p>Status: {session.completed ? "Completed" : session.isCancelled ? "Cancelled" : "In Progress"}</p>
+                            <CardContent className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                <p><span className="font-medium">Type:</span> {session.targetType}</p>
+                                {session.targetId && <p><span className="font-medium">Target ID:</span> {session.targetId}</p>}
+                                <p><span className="font-medium">Start:</span> {new Date(session.startTime).toLocaleString()}</p>
+                                {session.endTime && <p><span className="font-medium">End:</span> {new Date(session.endTime).toLocaleString()}</p>}
+                                {session.duration && <p><span className="font-medium">Duration:</span> {session.duration} minutes</p>}
+                                <p><span className="font-medium">Status:</span> {session.completed ? "Completed" : session.isCancelled ? "Cancelled" : "In Progress"}</p>
                                 <div className="flex space-x-2 mt-4">
                                     {!session.completed && !session.isCancelled && (
                                         <Button onClick={() => handleComplete(session.id!)} variant="outline" className="text-green-600 border-green-600 hover:bg-green-50">Complete</Button>
@@ -109,5 +111,4 @@ function SessionsPage() {
         </div>
     );
 }
-
 export default SessionsPage;
