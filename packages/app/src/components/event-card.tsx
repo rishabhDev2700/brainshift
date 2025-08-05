@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { dataService } from "@/services/api-service"
 import { EventForm } from "./forms/event-form"
+import { CalendarDays } from "lucide-react";
 
 interface EventCardProps {
     event: EventSchema;
@@ -27,16 +28,19 @@ function EventCard({ event, refreshEvents }: EventCardProps) {
     }
 
     return (
-        <Card key={event.id} className="flex flex-col">
-            <CardHeader>
-                <CardTitle>{event.title}</CardTitle>
-                <CardDescription className="text-sm text-gray-500">
-                    {event.date && <span>{new Date(event.date).toLocaleDateString()}</span>}
+        <Card key={event.id} className="flex flex-col p-4 border border-gray-200 dark:border-gray-700">
+            <CardHeader className="p-0 pb-2">
+                <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">
+                    {event.title}
+                </CardTitle>
+                <CardDescription className="text-sm text-gray-600 dark:text-gray-400 flex items-center space-x-1">
+                    <CalendarDays className="h-4 w-4 text-gray-500" />
+                    <span>{new Date(event.date).toLocaleDateString()}</span>
                 </CardDescription>
             </CardHeader>
-            <CardContent className="flex justify-between items-center">
-                {event.description && <p>{event.description}</p>}
-                <div className="space-x-2">
+            <CardContent className="p-0 pt-2 text-sm text-gray-700 dark:text-gray-300">
+                {event.description && <p className="mb-3">{event.description}</p>}
+                <div className="flex justify-end space-x-2">
                     <Dialog>
                         <DialogTrigger asChild>
                             <Button variant="outline" size="sm" >

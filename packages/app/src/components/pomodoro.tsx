@@ -6,40 +6,54 @@ import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PomodoroProps {
-    workDuration?: number; // in minutes
-    breakDuration?: number; // in minutes
-    onComplete?: () => void;
-    onCancel?: () => void;
+    mode: 'pomodoro' | 'manual';
+    workDuration?: number;
+    breakDuration?: number;
+    onComplete?: (sessionId: number, duration?: number) => void;
+    onCancel?: (sessionId: number) => void;
+    sessionId: number;
+    initialTime?: number;
+    isResumed?: boolean;
 }
 
-export function Pomodoro({ workDuration = 2, breakDuration = 5, onComplete, onCancel }: PomodoroProps) {
-    const [timeLeft, setTimeLeft] = useState(workDuration * 60);
-    const [isRunning, setIsRunning] = useState(false);
+export function Pomodoro({ mode, workDuration = 25, breakDuration = 5, onComplete, onCancel, sessionId, initialTime, isResumed }: PomodoroProps) {
+    const [time, setTime] = useState(initialTime || (mode === 'pomodoro' ? workDuration * 60 : 0));
+    const [isRunning, setIsRunning] = useState(isResumed || false);
     const [isWorkTime, setIsWorkTime] = useState(true);
 
-    let timer: NodeJS.Timeout;
     useEffect(() => {
+        let timer: NodeJS.Timeout | undefined;
 
-        if (isRunning && timeLeft > 0) {
-            timer = setInterval(() => {
-                setTimeLeft((prevTime) => prevTime - 1);
-            }, 1000);
-        } else if (timeLeft === 0) {
-            clearInterval(timer);
-            if (isWorkTime) {
-                toast.info("Work session complete! Time for a break.");
-                setIsWorkTime(false);
-                setTimeLeft(breakDuration * 60);
+        if (isRunning) {
+            if (mode === 'pomodoro') {
+                if (time > 0) {
+                    timer = setInterval(() => {
+                        setTime((prevTime) => prevTime - 1);
+                    }, 1000);
+                } else {
+                    if (isWorkTime) {
+                        toast.info("Work session complete!");
+                        setIsRunning(false);
+                        if (onComplete) onComplete(sessionId);
+                    } else {
+                        toast.success("Break complete! Ready for next work session.");
+                        setIsWorkTime(true);
+                        setTime(workDuration * 60);
+                    }
+                }
             } else {
-                toast.success("Break complete! Ready for next work session.");
-                setIsWorkTime(true);
-                setTimeLeft(workDuration * 60);
-                if (onComplete) onComplete();
+                timer = setInterval(() => {
+                    setTime((prevTime) => prevTime + 1);
+                }, 1000);
             }
         }
 
-        return () => clearInterval(timer);
-    }, [isRunning, timeLeft, isWorkTime, workDuration, breakDuration, onComplete]);
+        return () => {
+            if (timer) {
+                clearInterval(timer);
+            }
+        };
+    }, [isRunning, time, isWorkTime, workDuration, breakDuration, sessionId, onComplete, mode]);
 
     const formatTime = (seconds: number) => {
         const minutes = Math.floor(seconds / 60);
@@ -53,21 +67,31 @@ export function Pomodoro({ workDuration = 2, breakDuration = 5, onComplete, onCa
 
     const handleReset = () => {
         setIsRunning(false);
-        setIsWorkTime(true);
-        setTimeLeft(workDuration * 60);
-        toast.info("Pomodoro timer reset.");
+        if (mode === 'pomodoro') {
+            setIsWorkTime(true);
+            setTime(workDuration * 60);
+        } else {
+            setTime(0);
+        }
+        toast.info(`Timer reset.`);
     };
 
     const handleComplete = () => {
         setIsRunning(false);
-        toast.success("Pomodoro session completed manually.");
-        if (onComplete) onComplete();
+        toast.success("Session completed manually.");
+        if (onComplete) {
+            if (mode === 'manual') {
+                onComplete(sessionId, time);
+            } else {
+                onComplete(sessionId);
+            }
+        }
     };
 
     const handleCancel = () => {
         setIsRunning(false);
-        toast.warning("Pomodoro session cancelled.");
-        if (onCancel) onCancel();
+        toast.warning("Session cancelled.");
+        if (onCancel) onCancel(sessionId);
     };
 
     return (
@@ -75,37 +99,39 @@ export function Pomodoro({ workDuration = 2, breakDuration = 5, onComplete, onCa
             <Card className="w-full max-w-xs mx-auto text-center p-4">
                 <CardHeader className="p-0">
                     <CardTitle className="text-xl font-medium text-gray-700 dark:text-gray-300">
-                        {isWorkTime ? "Work Time" : "Break Time"}
+                        {mode === 'pomodoro' ? (isWorkTime ? "Work Time" : "Break Time") : "Manual Timer"}
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6 p-0">
                     <div className="relative w-48 h-48 mx-auto">
-                        <svg className="w-full h-full" viewBox="0 0 100 100">
-                            <circle
-                                className="text-gray-300"
-                                strokeWidth="4"
-                                stroke="currentColor"
-                                fill="transparent"
-                                r="40"
-                                cx="50"
-                                cy="50"
-                            />
-                            <circle
-                                className="text-emerald-600 transition-all duration-1000 ease-linear"
-                                strokeWidth="5"
-                                strokeDasharray={2 * Math.PI * 40}
-                                strokeDashoffset={(2 * Math.PI * 40) - (timeLeft / (isWorkTime ? workDuration * 60 : breakDuration * 60)) * (2 * Math.PI * 40)}
-                                strokeLinecap="round"
-                                stroke="currentColor"
-                                fill="transparent"
-                                r="40"
-                                cx="50"
-                                cy="50"
-                                transform="rotate(-90 50 50)"
-                            />
-                        </svg>
+                        {mode === 'pomodoro' && (
+                            <svg className="w-full h-full" viewBox="0 0 100 100">
+                                <circle
+                                    className="text-gray-300"
+                                    strokeWidth="4"
+                                    stroke="currentColor"
+                                    fill="transparent"
+                                    r="40"
+                                    cx="50"
+                                    cy="50"
+                                />
+                                <circle
+                                    className="text-emerald-600 transition-all duration-1000 ease-linear"
+                                    strokeWidth="5"
+                                    strokeDasharray={2 * Math.PI * 40}
+                                    strokeDashoffset={(2 * Math.PI * 40) - (time / (isWorkTime ? workDuration * 60 : breakDuration * 60)) * (2 * Math.PI * 40)}
+                                    strokeLinecap="round"
+                                    stroke="currentColor"
+                                    fill="transparent"
+                                    r="40"
+                                    cx="50"
+                                    cy="50"
+                                    transform="rotate(-90 50 50)"
+                                />
+                            </svg>
+                        )}
                         <div className="absolute inset-0 flex items-center justify-center text-5xl font-extrabold text-emerald-600 tracking-tight">
-                            {formatTime(timeLeft)}
+                            {formatTime(time)}
                         </div>
                     </div>
                     <div className="flex justify-center space-x-3">

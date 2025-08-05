@@ -17,7 +17,7 @@ import { ModeToggle } from "./mode-toggle"
 function SideSheet() {
     return (
         <Sheet>
-            <SheetTrigger className="md:hidden fixed bottom-4 right-4 z-50" asChild>
+            <SheetTrigger className="lg:hidden fixed bottom-4 right-4 z-50" asChild>
                 <Button className="rounded-full w-24 h-12 bg-emerald-600 border-2 border-black">
                     <MenuIcon color="black" size={32} />
                 </Button>

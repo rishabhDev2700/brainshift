@@ -9,6 +9,7 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { User2Icon } from "lucide-react"
 import { Button } from "./ui/button"
+import { Link } from "react-router-dom";
 
 
 function UserDropdown() {
@@ -19,7 +20,7 @@ function UserDropdown() {
             <DropdownMenuContent className="mr-2">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <Link to="/dashboard/profile"><DropdownMenuItem>Profile</DropdownMenuItem></Link>
                 <DropdownMenuItem>Billing</DropdownMenuItem>
                 <DropdownMenuItem>Team</DropdownMenuItem>
                 <DropdownMenuItem>Subscription</DropdownMenuItem>
