@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
-import { Loader2, PlusCircle } from "lucide-react"
+import { PlusCircle } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from 'react-router-dom'
 import { dataService } from '@/services/api-service'
 import type { GoalSchema } from '@/types'
@@ -40,7 +41,11 @@ function GoalsPage() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {loading ? <Loader2 color='green' className='animate-spin fixed top-1/2 left-1/2 scale-200' /> : Array.isArray(goals) ?
+                {loading ? (
+                    Array.from({ length: 6 }).map((_, i) => (
+                        <Skeleton key={i} className="h-[275px] w-full rounded-xl" />
+                    ))
+                ) : Array.isArray(goals) ?
                     goals.map(goal => (
                         <GoalCard key={goal.id} goal={goal} refresh={fetchGoals} />
                     ))

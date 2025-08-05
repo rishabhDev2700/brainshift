@@ -332,4 +332,16 @@ export const dataService = {
       console.log(err);
     }
   },
+
+  // Analytics resource
+
+  getAnalyticsDashboard: async () => {
+    try {
+      const res = await dataClient.get("/analytics/dashboard");
+      return res.data;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  },
 };

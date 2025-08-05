@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { dataService } from "@/services/api-service";
 import type { SessionSchema } from "@/types";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SessionItem } from "@/components/session-item";
 import { PlusCircle, Loader2Icon } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { SessionStartForm } from "@/components/session-start-form";
 import { Pomodoro } from "@/components/pomodoro";
@@ -15,7 +17,7 @@ function SessionsPage() {
     const [isActionLoading, setIsActionLoading] = useState(false);
     const [activeSession, setActiveSession] = useState<SessionSchema | null>(null);
     const [showPomodoro, setShowPomodoro] = useState(false);
-    const [filter, setFilter] = useState<'all' | 'completed' | 'cancelled'>('all');
+    const [filter, setFilter] = useState<'ALL' | "COMPLETED" | "CANCELLED">('ALL');
 
     const fetchSessions = useCallback(async () => {
         setLoading(true);
@@ -69,12 +71,12 @@ function SessionsPage() {
     }, [fetchSessions]);
 
     const filteredSessions = useMemo(() => {
-        if (filter === 'all') {
+        if (filter === 'ALL') {
             return sessions;
         }
         return sessions.filter(s => {
-            if (filter === 'completed') return s.completed;
-            if (filter === 'cancelled') return s.isCancelled;
+            if (filter === "COMPLETED") return s.completed;
+            if (filter === "CANCELLED") return s.isCancelled;
             return true;
         });
     }, [sessions, filter]);
@@ -82,9 +84,9 @@ function SessionsPage() {
 
     return (
         <div className="container mx-auto px-0 md:px-8 py-4 md:py-8 space-y-8">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0 px-4 md:px-0">
-                <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-gray-800 dark:text-gray-100">Your Sessions</h2>
-                <div className="flex flex-wrap justify-center md:justify-end gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0 px-4 md:px-0">
+                <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-gray-800 dark:text-gray-100 mb-4 md:mb-0">Your Sessions</h2>
+                <div className="flex flex-col md:flex-row flex-wrap justify-center md:justify-end gap-4 w-full md:w-auto">
                     {!activeSession && (
                         <Dialog>
                             <DialogTrigger asChild>
@@ -127,17 +129,24 @@ function SessionsPage() {
             )}
 
             <div className="px-0 sm:p-4 sm:border sm:rounded-lg sm:shadow-sm">
-                <div className="flex justify-between items-center mb-4 px-4 sm:px-0">
-                    <h3 className="text-lg md:text-xl font-semibold">Session History</h3>
-                    <div className="flex gap-2">
-                        <Button variant={filter === 'all' ? 'default' : 'outline'} onClick={() => setFilter('all')}>All</Button>
-                        <Button variant={filter === 'completed' ? 'default' : 'outline'} onClick={() => setFilter('completed')}>Completed</Button>
-                        <Button variant={filter === 'cancelled' ? 'default' : 'outline'} onClick={() => setFilter('cancelled')}>Cancelled</Button>
-                    </div>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 px-4 sm:px-0">
+                    <h3 className="text-lg md:text-xl font-semibold mb-2 md:mb-0">Session History</h3>
+                    <Select onValueChange={(value: "ALL" | "COMPLETED" | "CANCELLED") => setFilter(value)} defaultValue="ALL">
+                        <SelectTrigger className="w-full md:w-[180px]">
+                            <SelectValue placeholder="Filter by status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="ALL">All</SelectItem>
+                            <SelectItem value="COMPLETED">Completed</SelectItem>
+                            <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
                 <div className="flex flex-col gap-4">
                     {loading ? (
-                        <p>Loading sessions...</p>
+                        Array.from({ length: 3 }).map((_, i) => (
+                            <Skeleton key={i} className="h-[100px] w-full rounded-xl" />
+                        ))
                     ) : filteredSessions.length > 0 ? (
                         filteredSessions.map((session) => (
                             <SessionItem

@@ -2,64 +2,88 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { TasksChart } from "@/components/dashboard/tasks-chart";
 import { TimeChart } from "@/components/dashboard/time-chart";
 import { GoalsProgress } from "@/components/dashboard/goals-progress";
+import { useState, useEffect } from "react";
+import { dataService } from "@/services/api-service";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function Dashboard() {
-    const tasksCompleted = 124;
-    const timeSpent = 124;
-    const goalsAchieved = 7;
-    const totalGoals = 10;
+    const [analyticsData, setAnalyticsData] = useState({
+        totalTasksCompleted: 0,
+        totalTimeSpent: 0,
+        totalGoalsAchieved: 0,
+        totalGoals: 0,
+        tasksPerDay: [],
+        timeSpentOverview: [],
+    });
+    const [loading, setLoading] = useState(true);
 
-    const chartData = [
-        { date: "2025-07-01", tasks: 1 },
-        { date: "2025-07-02", tasks: 2 },
-        { date: "2025-07-03", tasks: 5 },
-        { date: "2025-07-04", tasks: 10 },
-        { date: "2025-07-05", tasks: 2 },
-        { date: "2025-07-06", tasks: 0 },
-        { date: "2025-07-07", tasks: 4 },
-        { date: "2025-07-08", tasks: 4 },
-        { date: "2025-07-09", tasks: 6 },
-        { date: "2025-07-10", tasks: 1 },
-        { date: "2025-07-11", tasks: 1 },
-        { date: "2025-07-12", tasks: 0 },
-        { date: "2025-07-13", tasks: 2 },
-        { date: "2025-07-14", tasks: 6 },
-        { date: "2025-07-15", tasks: 10 },
-    ];
+    useEffect(() => {
+        const fetchAnalyticsData = async () => {
+            try {
+                setLoading(true);
+                const data = await dataService.getAnalyticsDashboard();
+                setAnalyticsData(data);
+            } catch (error) {
+                console.error("Error fetching analytics data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const timeData = [
-        { month: "January", desktop: 186 },
-        { month: "February", desktop: 305 },
-        { month: "March", desktop: 237 },
-        { month: "April", desktop: 73 },
-        { month: "May", desktop: 209 },
-        { month: "June", desktop: 214 },
-    ];
+        fetchAnalyticsData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="p-4 md:p-8 space-y-8">
+                <Skeleton className="h-8 w-1/3 mb-8" />
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 min-w-full max-w-screen content-center">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <Skeleton key={i} className="h-[100px] w-full rounded-xl" />
+                    ))}
+                </div>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2 w-full">
+                    <div className="p-4 border rounded-lg shadow-sm overflow-x-auto">
+                        <Skeleton className="h-6 w-1/2 mb-4" />
+                        <Skeleton className="h-[200px] w-full" />
+                    </div>
+                    <div className="p-4 border rounded-lg shadow-sm overflow-x-auto">
+                        <Skeleton className="h-6 w-1/2 mb-4" />
+                        <Skeleton className="h-[200px] w-full" />
+                    </div>
+                </div>
+                <div className="p-4 border rounded-lg shadow-sm">
+                    <Skeleton className="h-6 w-1/2 mb-4" />
+                    <Skeleton className="h-[100px] w-full" />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="p-4 md:p-8 space-y-8">
             <h2 className="text-xl md:text-3xl font-bold tracking-tight">Dashboard Overview</h2>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 min-w-full max-w-screen content-center">
-                <StatCard title="Tasks Completed" value={tasksCompleted.toString()} />
-                <StatCard title="Time Spent" value={`${timeSpent} hours`} />
-                <StatCard title="Goals Achieved" value={`${goalsAchieved}/${totalGoals}`} />
+                <StatCard title="Tasks Completed" value={analyticsData.totalTasksCompleted.toString()} />
+                <StatCard title="Time Spent" value={`${(analyticsData.totalTimeSpent / 60).toFixed(1)} hours`} />
+                <StatCard title="Goals Achieved" value={`${analyticsData.totalGoalsAchieved}/${analyticsData.totalGoals}`} />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2 w-full">
                 <div className="p-4 border rounded-lg shadow-sm overflow-x-auto">
                     <h3 className="text-lg md:text-xl font-semibold mb-4">Tasks Completed per day</h3>
-                    <TasksChart data={chartData} />
+                    <TasksChart data={analyticsData.tasksPerDay} />
                 </div>
                 <div className="p-4 border rounded-lg shadow-sm overflow-x-auto">
                     <h3 className="text-lg md:text-xl font-semibold mb-4">Time Spent Overview</h3>
-                    <TimeChart data={timeData} />
+                    <TimeChart data={analyticsData.timeSpentOverview} />
                 </div>
             </div>
 
             <div className="p-4 border rounded-lg shadow-sm">
                 <h3 className="text-lg md:text-xl font-semibold mb-4">Goals Progress</h3>
-                <GoalsProgress achieved={goalsAchieved} total={totalGoals} />
+                <GoalsProgress achieved={analyticsData.totalGoalsAchieved} total={analyticsData.totalGoals} />
             </div>
         </div>
     );
