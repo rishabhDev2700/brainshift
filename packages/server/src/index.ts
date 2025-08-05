@@ -12,6 +12,7 @@ import EventsRoutes from "./routes/events";
 import GoalsRoutes from "./routes/goals";
 import TaskRoutes from "./routes/tasks";
 import SessionRoutes from "./routes/sessions";
+import UserRoutes from "./routes/users";
 import { cors } from "hono/cors";
 const app = new Hono<{ Variables: HonoVariables }>().basePath("/api");
 
@@ -74,6 +75,7 @@ app.route("/events", EventsRoutes);
 app.route("/goals", GoalsRoutes);
 app.route("/tasks", TaskRoutes);
 app.route("/sessions", SessionRoutes);
+app.route("/users", UserRoutes);
 export default {
   fetch: app.fetch,
   port: process.env.PORT,
