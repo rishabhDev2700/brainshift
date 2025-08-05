@@ -1,10 +1,15 @@
 import axios from "axios";
-import { type TaskSchema, type GoalSchema, type EventSchema, type SessionSchema } from "@/types";
+import {
+  type TaskSchema,
+  type GoalSchema,
+  type EventSchema,
+  type SessionSchema,
+} from "@/types";
 const baseURL = import.meta.env.VITE_API_DOMAIN;
 console.log(baseURL);
 const authClient = axios.create({
   baseURL: baseURL,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
     "X-Requested-With": "XMLHttpRequest",
@@ -13,7 +18,7 @@ const authClient = axios.create({
 
 const dataClient = axios.create({
   baseURL: baseURL,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
     "X-Requested-With": "XMLHttpRequest",
@@ -244,6 +249,27 @@ export const dataService = {
     }
   },
 
+  // User resource
+
+  getProfile: async () => {
+    try {
+      const res = await dataClient.get("/users/me");
+      console.log(res.data);
+      return res.data;
+    } catch (err) {
+      console.log(err);
+    }
+  },
+
+  updateProfile: async (data: { fullName: string; email: string }) => {
+    try {
+      const res = await dataClient.put("/users/me", data);
+      return res;
+    } catch (err) {
+      console.log(err);
+    }
+  },
+
   // Sessions resource
 
   getSessions: async (): Promise<SessionSchema[]> => {
@@ -272,7 +298,7 @@ export const dataService = {
       console.log(err);
     }
   },
-  updateSession: async (id: number, data: SessionSchema) => {
+  updateSession: async (id: number, data: Partial<SessionSchema>) => {
     try {
       const res = await dataClient.put(`/sessions/${id}`, data);
       return res;
@@ -298,7 +324,9 @@ export const dataService = {
   },
   completeSession: async (id: number, completed: boolean) => {
     try {
-      const res = await dataClient.patch(`/sessions/${id}/completed`, { completed });
+      const res = await dataClient.patch(`/sessions/${id}/completed`, {
+        completed,
+      });
       return res;
     } catch (err) {
       console.log(err);
