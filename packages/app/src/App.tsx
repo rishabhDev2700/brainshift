@@ -16,6 +16,7 @@ import GoalFormPage from './pages/goal-form.page';
 import { Toaster } from "@/components/ui/sonner";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import SessionsPage from './pages/sessions.page';
+import ProfilePage from './pages/profile.page';
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
                   <Route path='calendar' element={<CalendarPage />} />
                   <Route path="calendar/:id" element={<EventDetailsPage />} />
                   <Route path="sessions" element={<SessionsPage />} />
+                  <Route path="profile" element={<ProfilePage />} />
                 </Route>
               </Route>
             </Routes>
