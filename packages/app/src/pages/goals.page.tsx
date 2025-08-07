@@ -6,11 +6,13 @@ import { Link } from 'react-router-dom'
 import { dataService } from '@/services/api-service'
 import type { GoalSchema } from '@/types'
 import GoalCard from '@/components/goal-card'
+import GoalsGraph from '@/components/goals-graph';
 
 
 function GoalsPage() {
     const [goals, setGoals] = useState<GoalSchema[]>([]);
     const [loading, setLoading] = useState<Boolean>(true)
+    const [graphToggle, setGraphToggle] = useState<boolean>(false)
     useEffect(() => {
         fetchGoals();
 
@@ -30,29 +32,32 @@ function GoalsPage() {
 
 
     return (
-        <div className="p-4 md:p-8 space-y-8">
-            <div className="flex justify-between items-center">
-                <h2 className="text-xl md:text-3xl font-bold tracking-tight">Your Goals</h2>
-                <Link to="/dashboard/goals/new">
-                    <Button className="bg-emerald-600 hover:bg-emerald-700">
-                        <PlusCircle className="mr-2 h-4 w-4" /> Add New Goal
-                    </Button>
-                </Link>
+        <div className="space-y-8">
+            <div className="p-4 md:p-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-xl md:text-3xl font-bold tracking-tight">Your Goals</h2>
+                    <Link to="/dashboard/goals/new">
+                        <Button className="bg-emerald-600 hover:bg-emerald-700">
+                            <PlusCircle className="mr-2 h-4 w-4" /> Add New Goal
+                        </Button>
+                    </Link>
+                </div>
+                <Button className='mt-4' variant="outline" onClick={() => setGraphToggle(!graphToggle)}>Toggle {graphToggle ? "List" : "Graph"}</Button>
             </div>
-
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {loading ? (
-                    Array.from({ length: 6 }).map((_, i) => (
-                        <Skeleton key={i} className="h-[275px] w-full rounded-xl" />
-                    ))
-                ) : Array.isArray(goals) ?
-                    goals.map(goal => (
-                        <GoalCard key={goal.id} goal={goal} refresh={fetchGoals} />
-                    ))
-                    : (
-                        <p className="text-gray-500 col-span-3">No Goals found. Add a new goal to get started!</p>
-                    )}
-            </div>
+            {graphToggle ? <GoalsGraph goals={goals} /> : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {loading ? (
+                        Array.from({ length: 6 }).map((_, i) => (
+                            <Skeleton key={i} className="h-[275px] w-full rounded-xl" />
+                        ))
+                    ) : Array.isArray(goals) ?
+                        goals.map(goal => (
+                            <GoalCard key={goal.id} goal={goal} refresh={fetchGoals} />
+                        ))
+                        : (
+                            <p className="text-gray-500 col-span-3">No Goals found. Add a new goal to get started!</p>
+                        )}
+                </div>)}
         </div>
     )
 }

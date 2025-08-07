@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 function TasksPage() {
     const [tasks, setTasks] = useState<TaskSchema[]>([]);
     const [loading, setLoading] = useState<boolean>(true)
-    const [filter, setFilter] = useState < "NOT STARTED" | "IN PROGRESS" | "COMPLETED" | "CANCELLED"|"ALL" >();
+    const [filter, setFilter] = useState<"NOT STARTED" | "IN PROGRESS" | "COMPLETED" | "CANCELLED" | "ALL">("ALL");
 
     useEffect(() => {
         fetchTasks();
@@ -37,7 +37,6 @@ function TasksPage() {
         }
         return tasks.filter(t => t.status === filter);
     }, [tasks, filter]);
-
     return (
         <div className="p-4 md:p-8 space-y-8">
             <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between">

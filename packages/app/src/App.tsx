@@ -5,7 +5,7 @@ import Dashboard from './pages/dashboard.page';
 import Layout from './pages/layout';
 import CalendarPage from './pages/calendar.page';
 import TasksPage from './pages/tasks.page';
-import MyDayPage from './pages/myday.page';
+
 import TaskFormPage from './pages/task-form.page';
 import { AuthProvider } from './contexts/auth-context';
 import PrivateRoute from './components/private-route';
@@ -17,6 +17,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import SessionsPage from './pages/sessions.page';
 import ProfilePage from './pages/profile.page';
+import AnalyticsPage from './pages/analytics.page';
 
 function App() {
   return (
@@ -30,7 +31,7 @@ function App() {
               <Route element={<PrivateRoute />}>
                 <Route path='dashboard' element={<Layout />}>
                   <Route index element={<Dashboard />} />
-                  <Route path='myday' element={<MyDayPage />} />
+                  
                   <Route path='tasks/new' element={<TaskFormPage />} />
                   <Route path='tasks/:id' element={<TaskFormPage />} />
                   <Route path='tasks' element={<TasksPage />} />
@@ -41,6 +42,7 @@ function App() {
                   <Route path="calendar/:id" element={<EventDetailsPage />} />
                   <Route path="sessions" element={<SessionsPage />} />
                   <Route path="profile" element={<ProfilePage />} />
+                  <Route path='analytics' element={<AnalyticsPage />} />
                 </Route>
               </Route>
             </Routes>
