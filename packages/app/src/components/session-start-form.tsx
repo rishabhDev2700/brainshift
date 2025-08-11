@@ -1,19 +1,18 @@
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { dataService } from "@/services/api-service";
-import type { TaskSchema, SessionSchema } from "@/types";
+import type { TaskSchema, SessionSchema, SubtaskSchema } from "@/types";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Input } from "./ui/input";
 
 const sessionFormSchema = z.object({
     targetType: z.enum(["task", "subtask"]),
     targetId: z.number().optional(),
+    subtaskId: z.number().optional(), // New field for subtask ID
     sessionType: z.enum(["pomodoro", "manual"]),
     duration: z.number().optional(),
 });
@@ -25,12 +24,13 @@ interface SessionStartFormProps {
     isActionLoading: boolean;
 }
 
-export function SessionStartForm({ onSessionStart, isActionLoading }: SessionStartFormProps) {
+export function SessionStartForm({ onSessionStart }: SessionStartFormProps) {
     const navigate = useNavigate();
     const [tasks, setTasks] = useState<TaskSchema[]>([]);
+    const [subtasks, setSubtasks] = useState<SubtaskSchema[]>([]); // New state for subtasks
     const [selectedTargetType, setSelectedTargetType] = useState<"task" | "subtask">("task");
-    const [selectedSessionType, setSelectedSessionType] = useState<"pomodoro" | "manual">("manual");
-    const { register, handleSubmit, formState: { errors } } = useForm<SessionFormData>({
+    const [_, setSelectedSessionType] = useState<"pomodoro" | "manual">("manual");
+    const { register, handleSubmit, control, formState: { errors } } = useForm<SessionFormData>({
         resolver: zodResolver(sessionFormSchema),
         defaultValues: {
             targetType: "task",
@@ -40,6 +40,7 @@ export function SessionStartForm({ onSessionStart, isActionLoading }: SessionSta
 
     useEffect(() => {
         fetchTasks();
+        fetchSubtasks();
     }, []);
 
     const fetchTasks = async () => {
@@ -51,20 +52,29 @@ export function SessionStartForm({ onSessionStart, isActionLoading }: SessionSta
         }
     };
 
+    const fetchSubtasks = async () => {
+        try {
+            const fetchedSubtasks = await dataService.getAllSubtasksForUser();
+            setSubtasks(fetchedSubtasks || []);
+        } catch (error) {
+            console.error("Error fetching subtasks:", error);
+        }
+    };
+
     const onSubmit = async (data: SessionFormData) => {
         try {
             const newSession: SessionSchema = {
                 targetType: data.targetType,
-                targetId: data.targetId,
+                targetId: data.targetType === "task" ? data.targetId : data.subtaskId, // Use subtaskId if targetType is subtask
                 startTime: new Date().toISOString(),
                 isPomodoro: data.sessionType === "pomodoro",
                 completed: false,
-                duration: data.sessionType === "manual" ? data.duration : undefined,
+                duration: data.sessionType === "pomodoro" ? data.duration : undefined, // Duration only for pomodoro
             };
             const response = await dataService.addSession(newSession);
             if (response) {
                 toast.success("Session started successfully!");
-                onSessionStart(response.data); 
+                onSessionStart(response.data);
                 navigate("/dashboard/sessions");
             }
         } catch (error) {
@@ -88,26 +98,6 @@ export function SessionStartForm({ onSessionStart, isActionLoading }: SessionSta
                 </Select>
             </div>
 
-            <div>
-                <Label htmlFor="sessionType">Session Mode</Label>
-                <Select onValueChange={(value: "pomodoro" | "manual") => setSelectedSessionType(value)} defaultValue="manual">
-                    <SelectTrigger>
-                        <SelectValue placeholder="Select session mode" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="manual">Manual Timer</SelectItem>
-                        <SelectItem value="pomodoro">Pomodoro</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-
-            {selectedSessionType === "pomodoro" && (
-                <div>
-                    <Label htmlFor="duration">Duration (minutes)</Label>
-                    <Input id="duration" type="number" {...register("duration", { valueAsNumber: true })} placeholder="e.g., 25" />
-                </div>
-            )}
-
             {selectedTargetType === "task" && (
                 <div>
                     <Label htmlFor="targetId">Select Task</Label>
@@ -127,8 +117,42 @@ export function SessionStartForm({ onSessionStart, isActionLoading }: SessionSta
                 </div>
             )}
 
+            {selectedTargetType === "subtask" && (
+                <div>
+                    <Label htmlFor="subtaskId">Select Subtask</Label>
+                    <Controller
+                        name="subtaskId"
+                        control={control}
+                        render={({ field }) => (
+                            <Select onValueChange={(value) => field.onChange(Number(value))}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a subtask" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {subtasks.map(subtask => (
+                                        <SelectItem key={subtask.id} value={subtask.id?.toString() || ""}>
+                                            {subtask.title} (Task: {tasks.find(t => t.subtasks?.some(s => s.id === subtask.id))?.title})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        )}
+                    />
+                    {errors.subtaskId && <p className="text-red-500 text-sm">{errors.subtaskId.message}</p>}
+                </div>
+            )}
 
-            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-800" disabled={isActionLoading}>Start Session</Button>
-        </form>
-    );
+            <div>
+                <Label htmlFor="sessionType">Session Mode</Label>
+                <Select onValueChange={(value: "pomodoro" | "manual") => setSelectedSessionType(value)} defaultValue="manual">
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select session mode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="manual">Manual Timer</SelectItem>
+                        <SelectItem value="pomodoro">Pomodoro</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+        </form>)
 }

@@ -4,6 +4,7 @@ import {
   type GoalSchema,
   type EventSchema,
   type SessionSchema,
+  type SubtaskSchema,
 } from "@/types";
 const baseURL = import.meta.env.VITE_API_DOMAIN;
 console.log(baseURL);
@@ -136,12 +137,13 @@ export const dataService = {
 
   // Tasks resource
 
-  getTasks: async () => {
+  getTasks: async (): Promise<TaskSchema[]> => {
     try {
       const res = await dataClient.get<TaskSchema[]>("/tasks");
       return res.data;
     } catch (err) {
       console.log(err);
+      return [];
     }
   },
   getTaskById: async (id: number) => {
@@ -179,7 +181,7 @@ export const dataService = {
 
   // Subtasks Resource
 
-  addSubtask: async (taskID: number, data: {}) => {
+  addSubtask: async (taskID: number, data: SubtaskSchema) => {
     try {
       const res = await dataClient.post(`/tasks/${taskID}/subtasks`, data);
       return res;
@@ -187,7 +189,7 @@ export const dataService = {
       console.log(err);
     }
   },
-  updateSubtask: async (taskID: number, id: number, data: {}) => {
+  updateSubtask: async (taskID: number, id: number, data: SubtaskSchema) => {
     try {
       const res = await dataClient.put(`/tasks/${taskID}/subtasks/${id}`, data);
       return res;
@@ -201,6 +203,16 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+    }
+  },
+
+  getAllSubtasksForUser: async (): Promise<SubtaskSchema[]> => {
+    try {
+      const res = await dataClient.get<SubtaskSchema[]>("/tasks/subtasks");
+      return res.data;
+    } catch (err) {
+      console.log(err);
+      return [];
     }
   },
 

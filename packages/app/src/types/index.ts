@@ -6,7 +6,19 @@ export interface TaskSchema {
   priority: number;
   deadline: string;
   goalId?: number;
+  subtasks?: SubtaskSchema[];
 }
+
+export interface SubtaskSchema {
+  id?: number;
+  title: string;
+  description: string;
+  status: "NOT STARTED"|"IN PROGRESS"|"COMPLETED"|"CANCELLED";
+  priority: number;
+  deadline: string;
+  taskId?: number;
+}
+
 
 export interface GoalSchema {
   id?: number;
