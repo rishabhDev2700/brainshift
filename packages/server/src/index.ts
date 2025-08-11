@@ -14,6 +14,7 @@ import TaskRoutes from "./routes/tasks";
 import SessionRoutes from "./routes/sessions";
 import UserRoutes from "./routes/users";
 import AnalyticsRoute from "./routes/analytics";
+import FriendsRoutes from "./routes/friends";
 import { cors } from "hono/cors";
 const app = new Hono<{ Variables: HonoVariables }>().basePath("/api");
 
@@ -78,6 +79,7 @@ app.route("/tasks", TaskRoutes);
 app.route("/sessions", SessionRoutes);
 app.route("/users", UserRoutes);
 app.route("/analytics", AnalyticsRoute);
+app.route("/friends", FriendsRoutes);
 export default {
   fetch: app.fetch,
   port: process.env.PORT,

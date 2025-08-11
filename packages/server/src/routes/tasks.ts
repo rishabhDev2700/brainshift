@@ -43,6 +43,21 @@ app
       console.log(error);
     }
   })
+  .get("/subtasks", async (c) => {
+    try {
+      const userId = c.get("user").id;
+      const subtasks = await db.select()
+        .from(SubtaskTable)
+        .innerJoin(TasksTable, eq(SubtaskTable.taskId, TasksTable.id))
+        .where(eq(TasksTable.userId, userId));
+      return c.json(subtasks.map(s => s.subtasks));
+    } catch (err) {
+      const error = err as DrizzleError;
+      console.log(error);
+      c.status(500);
+      return c.json({ message: "Internal Server Error" });
+    }
+  })
   .get("/:id", async (c) => {
     try {
       const { id } = c.req.param();
@@ -222,7 +237,7 @@ app
       const id = parseInt(c.req.param().id);
       const taskID = parseInt(c.req.param().taskID);
       const [deletedSubtask] = await db
-        .delete(TasksTable)
+        .delete(SubtaskTable)
         .where(and(eq(SubtaskTable.id, id), eq(SubtaskTable.taskId, taskID)))
         .returning();
       if (deletedSubtask) {

@@ -5,6 +5,8 @@ import { SessionsTable } from "../db/schemas/sessions";
 import { and, desc, DrizzleError, eq, inArray } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
 import * as z from "zod";
+import { StreaksTable } from "../db/schemas/streaks";
+import { isSameDay, isYesterday, subDays } from "date-fns";
 
 const app = new Hono<{ Variables: HonoVariables }>();
 const SessionSchema = z.object({
@@ -166,13 +168,20 @@ app
         completed: validated.completed,
       };
 
-      if (existingSession.isPomodoro) {
-        const startTime = new Date(existingSession.startTime).getTime();
-        const durationInMs = (existingSession.duration || 0) * 60 * 1000;
-        values.endTime = new Date(startTime + durationInMs);
-      } else {
-        values.endTime = new Date();
+      const sessionStartTime = new Date(existingSession.startTime);
+      let sessionEndTime = existingSession.endTime ? new Date(existingSession.endTime) : new Date();
+
+      if (existingSession.isPomodoro && existingSession.duration) {
+        // For pomodoro, if endTime is not explicitly set, calculate it based on start time and planned duration
+        const plannedEndTime = new Date(sessionStartTime.getTime() + existingSession.duration * 60 * 1000);
+        // Use the later of the current time or planned end time to ensure duration is accurate
+        sessionEndTime = sessionEndTime > plannedEndTime ? sessionEndTime : plannedEndTime;
       }
+
+      const durationInMinutes = Math.floor((sessionEndTime.getTime() - sessionStartTime.getTime()) / (1000 * 60));
+
+      values.endTime = sessionEndTime;
+      values.duration = durationInMinutes;
 
       const [session] = await db
         .update(SessionsTable)
@@ -183,6 +192,47 @@ app
       if (!session) {
         return c.json({ message: "Invalid Session ID" }, 404);
       }
+
+      // Streak logic
+      if (session.completed && session.duration && session.duration >= 30) {
+        const [streak] = await db
+          .select()
+          .from(StreaksTable)
+          .where(eq(StreaksTable.userId, userId));
+
+        const today = new Date();
+
+        if (streak) {
+          const lastStreakDate = new Date(streak.lastStreakDate as any);
+          if (isYesterday(lastStreakDate)) {
+            const newCurrentStreak = (streak.currentStreak || 0) + 1;
+            await db
+              .update(StreaksTable)
+              .set({
+                currentStreak: newCurrentStreak,
+                longestStreak: Math.max(
+                  newCurrentStreak,
+                  streak.longestStreak || 0
+                ),
+                lastStreakDate: today,
+              })
+              .where(eq(StreaksTable.userId, userId));
+          } else if (!isSameDay(lastStreakDate, today)) {
+            await db
+              .update(StreaksTable)
+              .set({ currentStreak: 1, lastStreakDate: today })
+              .where(eq(StreaksTable.userId, userId));
+          }
+        } else {
+          await db.insert(StreaksTable).values({
+            userId: userId,
+            currentStreak: 1,
+            longestStreak: 1,
+            lastStreakDate: today,
+          });
+        }
+      }
+
       return c.json({ session });
     }
   );

@@ -94,9 +94,9 @@ app
         )
         .returning();
       if (deletedEvent) {
-        return c.json({ message: "Goal deleted Successfully" });
+        return c.json({ message: "Event deleted Successfully" });
       }
-      return c.json({ message: "Goal not Found" });
+      return c.json({ message: "Event not Found" });
     } catch (err) {
       const error = err as DrizzleError;
       console.log(error);
@@ -129,6 +129,7 @@ app
   .put("/:id", zValidator("json", EventSchema), async (c) => {
     try {
       const validated = c.req.valid("json");
+      const { id } = c.req.param();
       const [event] = await db
         .update(EventsTable)
         .set({
@@ -136,7 +137,12 @@ app
           date: new Date(validated.date),
           userId: c.get("user").id,
         })
-        .where(eq(EventsTable.userId, c.get("user").id))
+        .where(
+          and(
+            eq(EventsTable.id, Number(id)),
+            eq(EventsTable.userId, c.get("user").id)
+          )
+        )
         .returning();
       if (!event) {
         return c.json({ message: "Something went wrong" });
