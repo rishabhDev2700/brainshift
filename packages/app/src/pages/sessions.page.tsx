@@ -7,8 +7,8 @@ import { SessionItem } from "@/components/session-item";
 import { PlusCircle, Loader2Icon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { SessionStartForm } from "@/components/session-start-form";
-import { Pomodoro } from "@/components/pomodoro";
+import { SessionStartForm } from "@/components/forms/session-start-form";
+import { ActiveSessionTimer } from "@/components/active-session-timer";
 
 
 function SessionsPage() {
@@ -16,7 +16,6 @@ function SessionsPage() {
     const [loading, setLoading] = useState(true);
     const [isActionLoading, setIsActionLoading] = useState(false);
     const [activeSession, setActiveSession] = useState<SessionSchema | null>(null);
-    const [showPomodoro, setShowPomodoro] = useState(false);
     const [filter, setFilter] = useState<'ALL' | "COMPLETED" | "CANCELLED">('ALL');
 
     const fetchSessions = useCallback(async () => {
@@ -39,13 +38,7 @@ function SessionsPage() {
         fetchSessions();
     }, [fetchSessions]);
 
-    useEffect(() => {
-        if (activeSession) {
-            setShowPomodoro(true);
-        }
-    }, [activeSession]);
-
-    const handleComplete = useCallback(async (id: number) => {
+    const handleComplete = async (id: number) => {
         setIsActionLoading(true);
         try {
             await dataService.completeSession(id, true);
@@ -56,9 +49,9 @@ function SessionsPage() {
         } finally {
             setIsActionLoading(false);
         }
-    }, [fetchSessions]);
+    }
 
-    const handleCancel = useCallback(async (id: number) => {
+    const handleCancel = async (id: number) => {
         setIsActionLoading(true);
         try {
             await dataService.cancelSession(id);
@@ -68,7 +61,7 @@ function SessionsPage() {
         } finally {
             setIsActionLoading(false);
         }
-    }, [fetchSessions]);
+    }
 
     const filteredSessions = useMemo(() => {
         if (filter === 'ALL') {
@@ -90,7 +83,7 @@ function SessionsPage() {
                     {!activeSession && (
                         <Dialog>
                             <DialogTrigger asChild>
-                                <Button className="bg-emerald-600 hover:bg-emerald-700" disabled={isActionLoading}>
+                                <Button className="bg-emerald-800 text-white hover:bg-emerald-600" disabled={isActionLoading}>
                                     {isActionLoading ? <Loader2Icon className="animate-spin" /> : <><PlusCircle className="mr-2 h-4 w-4" /> Start New Session</>}
                                 </Button>
                             </DialogTrigger>
@@ -105,26 +98,23 @@ function SessionsPage() {
                             </DialogContent>
                         </Dialog>
                     )}
-                    {activeSession && (
-                        <Button onClick={() => setShowPomodoro(!showPomodoro)} className="bg-blue-600 hover:bg-blue-700" disabled={isActionLoading}>
-                            {isActionLoading ? <Loader2Icon className="animate-spin" /> : (showPomodoro ? "Hide Timer" : "Show Timer")}
-                        </Button>
-                    )}
                 </div>
             </div>
 
             {activeSession && (
                 <div className="p-4 border rounded-lg shadow-sm mb-8 mx-4 md:mx-0">
-                    <h3 className="text-lg md:text-xl font-semibold mb-4">Active Session</h3>
-                    <Pomodoro
-                        sessionId={activeSession.id!}
-                        mode={activeSession.isPomodoro ? 'pomodoro' : 'manual'}
-                        workDuration={activeSession.duration}
-                        initialTime={activeSession.isPomodoro ? (activeSession.duration ? activeSession.duration * 60 - Math.floor((new Date().getTime() - new Date(activeSession.startTime).getTime()) / 1000) : undefined) : (Math.floor((new Date().getTime() - new Date(activeSession.startTime).getTime()) / 1000))}
-                        isResumed={true}
+                    <ActiveSessionTimer
+                        session={activeSession}
                         onComplete={handleComplete}
-                        onCancel={handleCancel}
                     />
+                    <div className="flex gap-4 mt-4">
+                        <Button onClick={() => handleComplete(activeSession.id!)} className="bg-green-600 hover:bg-green-700" disabled={isActionLoading}>
+                            Mark as Complete
+                        </Button>
+                        <Button onClick={() => handleCancel(activeSession.id!)} className="bg-red-600 hover:bg-red-700" disabled={isActionLoading}>
+                            Cancel Session
+                        </Button>
+                    </div>
                 </div>
             )}
 
@@ -152,8 +142,6 @@ function SessionsPage() {
                             <SessionItem
                                 key={session.id}
                                 session={session}
-                                handleComplete={handleComplete}
-                                handleCancel={handleCancel}
                                 isActionLoading={isActionLoading}
                             />
                         ))

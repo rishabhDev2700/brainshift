@@ -16,14 +16,13 @@ const SessionSchema = z.object({
   startTime: z.string(),
   endTime: z.string().optional(),
   duration: z.int().optional(),
-  isPomodoro: z.boolean().optional(),
+  isPomodoro: z.boolean(),
   completed: z.boolean().default(false),
 });
 
 const SessionCompleteSchema = z.object({
   completed: z.boolean(),
 });
-
 
 app
   .get("/", async (c) => {
@@ -32,7 +31,8 @@ app
       const sessions = await db
         .select()
         .from(SessionsTable)
-        .where(eq(SessionsTable.userId, userId)).orderBy(desc(SessionsTable.startTime));
+        .where(eq(SessionsTable.userId, userId))
+        .orderBy(desc(SessionsTable.startTime));
 
       return c.json(sessions);
     } catch (err) {
@@ -98,7 +98,10 @@ app
         );
 
       if (existingActiveSession.length > 0) {
-        return c.json({ message: "An active session is already in progress." }, 409);
+        return c.json(
+          { message: "An active session is already in progress." },
+          409
+        );
       }
 
       const validated = c.req.valid("json");
@@ -107,7 +110,7 @@ app
         startTime: new Date(validated.startTime),
         userId: userId,
       };
-
+      console.log(values);
       if (validated.isPomodoro) {
         const startTime = new Date(validated.startTime).getTime();
         const durationInMs = (validated.duration || 0) * 60 * 1000;
@@ -116,7 +119,10 @@ app
         values.endTime = new Date(validated.endTime);
       }
 
-      const [session] = await db.insert(SessionsTable).values(values).returning();
+      const [session] = await db
+        .insert(SessionsTable)
+        .values(values)
+        .returning();
 
       if (!session) {
         return c.json({ message: "Something went wrong" }, 404);
@@ -169,16 +175,23 @@ app
       };
 
       const sessionStartTime = new Date(existingSession.startTime);
-      let sessionEndTime = existingSession.endTime ? new Date(existingSession.endTime) : new Date();
+      let sessionEndTime = existingSession.endTime
+        ? new Date(existingSession.endTime)
+        : new Date();
 
       if (existingSession.isPomodoro && existingSession.duration) {
         // For pomodoro, if endTime is not explicitly set, calculate it based on start time and planned duration
-        const plannedEndTime = new Date(sessionStartTime.getTime() + existingSession.duration * 60 * 1000);
+        const plannedEndTime = new Date(
+          sessionStartTime.getTime() + existingSession.duration * 60 * 1000
+        );
         // Use the later of the current time or planned end time to ensure duration is accurate
-        sessionEndTime = sessionEndTime > plannedEndTime ? sessionEndTime : plannedEndTime;
+        sessionEndTime =
+          sessionEndTime > plannedEndTime ? sessionEndTime : plannedEndTime;
       }
 
-      const durationInMinutes = Math.floor((sessionEndTime.getTime() - sessionStartTime.getTime()) / (1000 * 60));
+      const durationInMinutes = Math.floor(
+        (sessionEndTime.getTime() - sessionStartTime.getTime()) / (1000 * 60)
+      );
 
       values.endTime = sessionEndTime;
       values.duration = durationInMinutes;
