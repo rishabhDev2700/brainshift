@@ -87,7 +87,7 @@ export const dataService = {
       return res.data;
     } catch (err) {
       console.log(err);
-      return [];
+      throw err; 
     }
   },
   getEventsByDate: async (date: string): Promise<EventSchema[]> => {
@@ -98,7 +98,7 @@ export const dataService = {
       return res.data;
     } catch (err) {
       console.log(err);
-      return [];
+      throw err; 
     }
   },
   getEventById: async (id: number): Promise<EventSchema> => {
@@ -107,7 +107,7 @@ export const dataService = {
       return res.data;
     } catch (err) {
       console.log(err);
-      throw Error("Invalid Error");
+      throw err; 
     }
   },
   addEvent: async (data: EventSchema) => {
@@ -116,6 +116,7 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
   updateEvent: async (id: number, data: EventSchema) => {
@@ -124,6 +125,7 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
   deleteEvent: async (id: number) => {
@@ -132,6 +134,7 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
 
@@ -143,7 +146,7 @@ export const dataService = {
       return res.data;
     } catch (err) {
       console.log(err);
-      return [];
+      throw err; 
     }
   },
   getTaskById: async (id: number) => {
@@ -152,6 +155,7 @@ export const dataService = {
       return res.data;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
   addTask: async (data: TaskSchema) => {
@@ -160,6 +164,7 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
   updateTask: async (id: number, data: TaskSchema) => {
@@ -168,6 +173,7 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
   deleteTask: async (id: number) => {
@@ -176,6 +182,7 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
 
@@ -187,6 +194,7 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
   updateSubtask: async (taskID: number, id: number, data: SubtaskSchema) => {
@@ -195,6 +203,7 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
   deleteSubtask: async (taskID: number, id: number) => {
@@ -203,6 +212,7 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
 
@@ -212,7 +222,7 @@ export const dataService = {
       return res.data;
     } catch (err) {
       console.log(err);
-      return [];
+      throw err; 
     }
   },
 
@@ -224,7 +234,7 @@ export const dataService = {
       return res.data;
     } catch (err) {
       console.log(err);
-      return [];
+      throw err; 
     }
   },
   getGoalById: async (id: number): Promise<GoalSchema> => {
@@ -233,7 +243,7 @@ export const dataService = {
       return res.data;
     } catch (err) {
       console.log(err);
-      throw Error("Invalid Error");
+      throw err; 
     }
   },
   addGoal: async (data: GoalSchema) => {
@@ -242,6 +252,7 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
   updateGoal: async (id: number, goal: GoalSchema) => {
@@ -250,6 +261,7 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
   deleteGoal: async (id: number) => {
@@ -258,6 +270,7 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
 
@@ -270,6 +283,7 @@ export const dataService = {
       return res.data;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
 
@@ -279,6 +293,7 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
 
@@ -290,7 +305,7 @@ export const dataService = {
       return res.data;
     } catch (err) {
       console.log(err);
-      return [];
+      throw err; 
     }
   },
   getSessionById: async (id: number): Promise<SessionSchema> => {
@@ -299,7 +314,7 @@ export const dataService = {
       return res.data;
     } catch (err) {
       console.log(err);
-      throw Error("Invalid Error");
+      throw err; 
     }
   },
   addSession: async (data: SessionSchema) => {
@@ -308,6 +323,7 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
   updateSession: async (id: number, data: Partial<SessionSchema>) => {
@@ -316,6 +332,7 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
   deleteSession: async (id: number) => {
@@ -324,6 +341,7 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
   cancelSession: async (id: number) => {
@@ -332,6 +350,7 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
   completeSession: async (id: number, completed: boolean) => {
@@ -342,17 +361,49 @@ export const dataService = {
       return res;
     } catch (err) {
       console.log(err);
+      throw err; 
     }
   },
 
   // Analytics resource
 
-  getAnalyticsDashboard: async () => {
+  getAnalyticsDashboard: async (queryString?: string) => {
     try {
-      const res = await dataClient.get("/analytics/dashboard");
+      const url = queryString ? `/analytics/dashboard?${queryString}` : "/analytics/dashboard";
+      const res = await dataClient.get(url);
       return res.data;
     } catch (err) {
       console.log(err);
+      throw err;
+    }
+  },
+
+  submitFeedback: async (data: { message: string; rating?: number; category?: string }) => {
+    try {
+      const res = await dataClient.post("/feedback", data);
+      return res.data;
+    } catch (err) {
+      console.error("Error submitting feedback:", err);
+      throw err;
+    }
+  },
+
+  getFriendsFeedbackStatus: async (): Promise<{ hasGivenFeedback: boolean }> => {
+    try {
+      const res = await dataClient.get("/feedback/status/friends");
+      return res.data;
+    } catch (err) {
+      console.error("Error fetching friends feedback status:", err);
+      throw err;
+    }
+  },
+
+  searchAll: async (query: string): Promise<{ tasks: TaskSchema[]; goals: GoalSchema[]; events: EventSchema[]; }> => {
+    try {
+      const res = await dataClient.get(`/search?query=${query}`);
+      return res.data;
+    } catch (err) {
+      console.error("Error during search:", err);
       throw err;
     }
   },
