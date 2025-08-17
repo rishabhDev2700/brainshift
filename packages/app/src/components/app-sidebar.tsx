@@ -19,7 +19,15 @@ export function AppSidebar() {
             </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
-                    {appRoutes.map((r, i) => <NavLink key={i} className={`py-2 px-4 border-2 border-transparent hover:border-emerald-700 duration-100 ease-linear hover:bg-emerald-600 hover:text-white my-2 rounded-xl`} to={r.url}>{r.text}</NavLink>)}
+                    {appRoutes.map((r, i) => (
+                        <NavLink key={i} className={`py-2 px-4 border-2 border-transparent hover:border-emerald-700 duration-100 ease-linear hover:bg-emerald-600 hover:text-white my-2 rounded-xl flex items-center`}
+                            to={r.url}
+                            end={r.url === "/dashboard"}
+                        >
+                            <r.icon className="mr-3 h-5 w-5" />
+                            {r.text}
+                        </NavLink>
+                    ))}
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>

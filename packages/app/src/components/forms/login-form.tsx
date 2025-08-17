@@ -9,12 +9,15 @@ import { authService } from "@/services/api-service"
 import { toast } from "sonner"
 import { Separator } from "../ui/separator"
 import { GoogleLogin } from '@react-oauth/google';
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 const loginSchema = z.object({
     email: z.string().email(),
     password: z.string().min(6),
 });
 
 export function LoginForm() {
+    const [loading, setLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
     const { register, handleSubmit, formState: { errors } } = useForm({
@@ -22,6 +25,7 @@ export function LoginForm() {
     });
 
     const onSubmit = async (data: any) => {
+        setLoading(true);
         try {
             const response = await authService.login(data);
             if (response?.data.token) {
@@ -33,6 +37,8 @@ export function LoginForm() {
         } catch (err) {
             toast.success("Something went wrong", { description: "Please try again" })
             console.error(err)
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -43,7 +49,7 @@ export function LoginForm() {
                 {errors.email && <p className="text-red-500 text-sm">{errors.email.message as string}</p>}
                 <Input className="my-4 py-2 px-4 rounded-full" aria-label="password" type='password' placeholder='Password' {...register("password")} />
                 {errors.password && <p className="text-red-500 text-sm">{errors.password.message as string}</p>}
-                <Button type="submit" className="w-full rounded-full bg-emerald-600 hover:bg-emerald-800">Login</Button>
+                <Button type="submit" className="w-full rounded-full bg-emerald-600 hover:bg-emerald-800" disabled={loading}>{loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Login"}</Button>
                 <Link className="text-gray-600 text-sm mt-4 block" to="/register"><Button variant="secondary" className="w-full bg-neutral-100 dark:text-neutral-800 hover:bg-neutral-200 border border-neutral-200/40 rounded-full">Register</Button></Link>
                 <Link className="text-gray-600 text-sm mt-4 block hover:underline" to="/forgot-password">Forgot Password?</Link>
             </form>
@@ -51,6 +57,7 @@ export function LoginForm() {
             <GoogleLogin
                 onSuccess={async credentialResponse => {
                     if (credentialResponse.credential) {
+                        setLoading(true);
                         try {
                             const response = await authService.googleLogin(credentialResponse.credential);
                             if (response?.data.token) {
@@ -61,6 +68,8 @@ export function LoginForm() {
                         } catch (err) {
                             toast.error("Google login failed", { description: "Please try again" })
                             console.error(err)
+                        } finally {
+                            setLoading(false);
                         }
                     }
                 }}

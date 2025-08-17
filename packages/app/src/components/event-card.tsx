@@ -11,20 +11,33 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import { dataService } from "@/services/api-service"
 import { EventForm } from "./forms/event-form"
 import { CalendarDays } from "lucide-react";
+import { useDeleteEvent } from "../hooks/useEvents";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface EventCardProps {
     event: EventSchema;
-    refreshEvents: () => void;
+    onEventDeleted: () => void;
 }
 
-function EventCard({ event, refreshEvents }: EventCardProps) {
+function EventCard({ event, onEventDeleted }: EventCardProps) {
+    const deleteEventMutation = useDeleteEvent();
+    const queryClient = useQueryClient();
+
     async function handleDelete(id: number | undefined) {
         if (!id) return
-        await dataService.deleteEvent(id);
-        refreshEvents();
+        deleteEventMutation.mutate(id, {
+            onSuccess: () => {
+                toast.success("Event deleted successfully!");
+                onEventDeleted();
+            },
+            onError: (error) => {
+                console.error("Error deleting event:", error);
+                toast.error("Failed to delete event.");
+            }
+        });
     }
 
     return (
@@ -54,7 +67,9 @@ function EventCard({ event, refreshEvents }: EventCardProps) {
                                     Edit the details for your event.
                                 </DialogDescription>
                             </DialogHeader>
-                            <EventForm id={event.id} fetchEvents={refreshEvents} />
+                            <EventForm id={event.id} onEventSaved={() => {
+                                queryClient.invalidateQueries({ queryKey: ['events'] });
+                            }} />
                         </DialogContent>
                     </Dialog>
                     <Dialog>

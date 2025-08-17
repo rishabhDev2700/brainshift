@@ -1,36 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { PlusCircle } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from 'react-router-dom'
-import { dataService } from '@/services/api-service'
-import type { GoalSchema } from '@/types'
 import GoalCard from '@/components/goal-card'
 import GoalsGraph from '@/components/goals-graph';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useGoals } from '../hooks/useGoals';
 
 
 function GoalsPage() {
-    const [goals, setGoals] = useState<GoalSchema[]>([]);
-    const [loading, setLoading] = useState<Boolean>(true)
     const [graphToggle, setGraphToggle] = useState<boolean>(false)
-    useEffect(() => {
-        fetchGoals();
+    const { data: goals, isLoading, isError, error } = useGoals();
 
-    }, []);
-
-    const fetchGoals = async () => {
-        setLoading(true)
-        try {
-            const response = await dataService.getGoals();
-            setGoals(response);
-        } catch (error) {
-            console.error("Error fetching tasks:", error);
-        } finally {
-            setLoading(false)
-        }
-    };
-
+    if (isError) {
+        return <div className="p-4 md:p-8">Error: {error?.message}</div>;
+    }
 
     return (
         <div className="space-y-8">
@@ -45,9 +30,9 @@ function GoalsPage() {
                 </div>
                 <Button className='mt-4' variant="outline" onClick={() => setGraphToggle(!graphToggle)}>Toggle {graphToggle ? "List" : "Graph"}</Button>
             </div>
-            {graphToggle ? <GoalsGraph goals={goals} /> : (
+            {graphToggle ? <GoalsGraph goals={goals || []} /> : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {loading ? (
+                    {isLoading ? (
                         Array.from({ length: 6 }).map((_, i) => (
                             <Card key={i} className="flex flex-col w-full h-full p-5 shadow-sm border border-gray-200 dark:border-gray-700 rounded-lg">
                                 <CardHeader className="pb-3 px-0 pt-0">
@@ -66,13 +51,13 @@ function GoalsPage() {
                                 </CardContent>
                             </Card>
                         ))
-                    ) : Array.isArray(goals) ?
+                    ) : Array.isArray(goals) && goals.length > 0 ? (
                         goals.map(goal => (
-                            <GoalCard key={goal.id} goal={goal} refresh={fetchGoals} />
+                            <GoalCard key={goal.id} goal={goal} />
                         ))
-                        : (
-                            <p className="text-gray-500 col-span-3">No Goals found. Add a new goal to get started!</p>
-                        )}
+                    ) : (
+                        <p className="text-gray-500 col-span-3">No Goals found. Add a new goal to get started!</p>
+                    )}
                 </div>)}
         </div>
     )

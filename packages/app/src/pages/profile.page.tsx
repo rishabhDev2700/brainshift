@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { dataService } from '@/services/api-service';
 import { toast } from 'sonner';
+import { useProfile, useUpdateProfile } from '../hooks/useProfile';
 
 const profileFormSchema = z.object({
   fullName: z.string().min(1, 'Full name is required'),
@@ -17,37 +17,42 @@ const profileFormSchema = z.object({
 type ProfileFormData = z.infer<typeof profileFormSchema>;
 
 function ProfilePage() {
-  const [user, setUser] = useState<any>(null);
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<ProfileFormData>({
+  const { data: profile, isLoading, isError, error } = useProfile();
+  const updateProfileMutation = useUpdateProfile();
+
+  const { register, handleSubmit, reset, formState: { errors }, getValues } = useForm<ProfileFormData>({
     resolver: zodResolver(profileFormSchema),
   });
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await dataService.getProfile();
-        setUser(response);
-        reset(response);
-      } catch (error) {
-        console.error('Error fetching user:', error);
-      }
-    };
+    if (profile && !isLoading) {
+      const currentFullName = getValues().fullName;
+      const currentEmail = getValues().email;
 
-    fetchUser();
-  }, [reset]);
+      if (currentFullName !== profile.fullName || currentEmail !== profile.email) {
+        reset(profile);
+      }
+    }
+  }, [profile, isLoading, reset, getValues]);
 
   const onSubmit = async (data: ProfileFormData) => {
-    try {
-      await dataService.updateProfile(data);
-      toast.success('Profile updated successfully!');
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Failed to update profile.');
-    }
+    updateProfileMutation.mutate(data, {
+      onSuccess: () => {
+        toast.success('Profile updated successfully!');
+      },
+      onError: (err) => {
+        console.error('Error updating profile:', err);
+        toast.error('Failed to update profile.');
+      },
+    });
   };
 
-  if (!user) {
+  if (isLoading) {
     return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Error: {error?.message}</div>;
   }
 
   return (

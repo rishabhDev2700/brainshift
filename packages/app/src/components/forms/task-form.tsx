@@ -6,15 +6,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useState, useEffect } from "react";
-import { dataService } from "@/services/api-service.ts";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import type { GoalSchema, SubtaskSchema, TaskSchema } from "@/types";
+import type { SubtaskSchema } from "@/types";
 import { localDateTimeToUTC } from "@/lib/utils";
 import { Loader2Icon, PlusCircle } from "lucide-react";
 import { Dialog, DialogContent,DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { SubtaskForm } from "./subtask-form";
 import { SubtaskCard } from "@/components/subtask-card";
+import { useTaskById, useAddTask, useUpdateTask } from "../../hooks/useTasks";
+import { useGoals } from "../../hooks/useGoals";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 const taskSchema = z.object({
     id: z.number().optional(),
@@ -40,15 +43,20 @@ interface TaskFormProps {
 
 export function TaskForm({ id }: TaskFormProps) {
     const navigate = useNavigate();
-    const [goals, setGoals] = useState<GoalSchema[]>()
-    const [task, setTask] = useState<TaskSchema | null>(null);
-    const [loading, setLoading] = useState<boolean>(true)
+    const queryClient = useQueryClient();
+
+    const { data: task, isLoading: taskLoading, isError: taskError } = useTaskById(id!);
+    const { data: goals, isLoading: goalsLoading, isError: goalsError } = useGoals();
+    const addTaskMutation = useAddTask();
+    const updateTaskMutation = useUpdateTask();
+
     const {
         register,
         handleSubmit,
         control,
         reset,
         formState: { errors },
+        getValues
     } = useForm<TaskFormValues>({
         resolver: zodResolver(taskSchema),
         defaultValues: {
@@ -60,56 +68,56 @@ export function TaskForm({ id }: TaskFormProps) {
     });
 
     useEffect(() => {
-        fetchGoals()
-        if (id) {
-            fetchTask();
-        }
-    }, [id, reset]);
+        if (id && task) {
+            const currentTitle = getValues().title;
+            const currentDescription = getValues().description;
 
-    async function fetchTask() {
-        if (!id) return;
-        dataService.getTaskById(id).then(response => {
-            const task = response;
-            if (task) {
-                setTask(task);
+            if (currentTitle !== task.title || currentDescription !== task.description) {
                 reset({
                     ...task,
                     deadline: task.deadline ? new Date(task.deadline).toISOString().slice(0, 16) : '',
                 });
             }
-        }).catch(error => {
-            console.error("Error fetching task:", error);
-        });
-    }
-
-    async function fetchGoals() {
-        setLoading(true)
-        const res = await dataService.getGoals();
-        setGoals(res)
-        setLoading(false)
-    }
-
-    const [error, setError] = useState<string | null>(null)
+        }
+    }, [id, task, reset, getValues]);
 
     const onSubmit: SubmitHandler<TaskFormValues> = async (data) => {
-        setLoading(true)
-        setError(null)
         const utcDeadline = localDateTimeToUTC(data.deadline);
         try {
             if (id) {
-                await dataService.updateTask(id, { ...data, deadline: utcDeadline.toISOString(), goalId: data.goalId === -1 ? undefined : data.goalId });
+                updateTaskMutation.mutate({ id, data: { ...data, deadline: utcDeadline.toISOString(), goalId: data.goalId === -1 ? undefined : data.goalId } }, {
+                    onSuccess: () => {
+                        toast.success("Task updated successfully!");
+                        navigate('/dashboard/tasks');
+                    },
+                    onError: (error) => {
+                        console.error("Error updating task:", error);
+                        toast.error("Failed to update task.");
+                    }
+                });
             } else {
-                await dataService.addTask({ ...data, deadline: utcDeadline.toISOString(), goalId: data.goalId === -1 ? undefined : data.goalId });
+                addTaskMutation.mutate({ ...data, deadline: utcDeadline.toISOString(), goalId: data.goalId === -1 ? undefined : data.goalId }, {
+                    onSuccess: () => {
+                        toast.success("Task created successfully!");
+                        navigate('/dashboard/tasks');
+                    },
+                    onError: (error) => {
+                        console.error("Error creating task:", error);
+                        toast.error("Failed to create task.");
+                    }
+                });
             }
-            navigate('/dashboard/tasks');
         } catch (error) {
             console.error("Error saving task:", error);
-            setError("Failed to save task. Please try again.")
-        }
-        finally {
-            setLoading(false)
+            toast.error("Failed to save task. Please try again.");
         }
     };
+
+    const loading = taskLoading || goalsLoading || addTaskMutation.isPending || updateTaskMutation.isPending;
+
+    if (taskError || goalsError) {
+        return <div>Error loading data.</div>;
+    }
 
     return (
         <div>
@@ -168,11 +176,9 @@ export function TaskForm({ id }: TaskFormProps) {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem key={-1} value="-1">None</SelectItem>
-                                        {goals ? (
-                                            goals.map(g => <SelectItem key={g.id} value={g.id!.toString()}>{g.title}</SelectItem>)
-                                        ) : (
+                                        {goalsLoading ? (
                                             <SelectItem value="loading" disabled>Loading...</SelectItem>
-                                        )}
+                                        ) : goals?.map(g => <SelectItem key={g.id} value={g.id!.toString()}>{g.title}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                             )}
@@ -199,7 +205,6 @@ export function TaskForm({ id }: TaskFormProps) {
                     </div>
                 </div>
                 <Button disabled={loading} type="submit" className="bg-emerald-600 hover:bg-emerald-400 md:mt-5">{loading ? <Loader2Icon className="animate-spin" /> : (id ? "Save" : "Create Task")}</Button>
-                {error && <p className="text-red-500 text-sm">{error}</p>}
             </form>
 
             {id && (
@@ -214,13 +219,16 @@ export function TaskForm({ id }: TaskFormProps) {
                                 <DialogHeader>
                                     <DialogTitle>Add New Subtask</DialogTitle>
                                 </DialogHeader>
-                                <SubtaskForm taskId={id} onSubtaskCreated={fetchTask} />
+                                <SubtaskForm taskId={id} onSubtaskCreated={() => {
+                                    queryClient.invalidateQueries({ queryKey: ['subtasks'] });
+                                    queryClient.invalidateQueries({ queryKey: ['tasks'] });
+                                }} />
                             </DialogContent>
                         </Dialog>
                     </div>
                     <div className="space-y-4">
                         {task?.subtasks?.map((subtask: SubtaskSchema) => (
-                            <SubtaskCard key={subtask.id} subtask={subtask} taskId={id!} fetchTask={fetchTask} />
+                            <SubtaskCard key={subtask.id} subtask={subtask} taskId={id!} />
                         ))}
                     </div>
                 </div>

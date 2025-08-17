@@ -1,43 +1,29 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { PlusCircle } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from 'react-router-dom'
-import { dataService } from '@/services/api-service'
-import type { TaskSchema } from '@/types'
 import TaskCard from "@/components/task-card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-
+import { useTasks } from '../hooks/useTasks';
 
 function TasksPage() {
-    const [tasks, setTasks] = useState<TaskSchema[]>([]);
-    const [loading, setLoading] = useState<boolean>(true)
     const [filter, setFilter] = useState<"NOT STARTED" | "IN PROGRESS" | "COMPLETED" | "CANCELLED" | "ALL">("ALL");
 
-    useEffect(() => {
-        fetchTasks();
-    }, []);
-
-    const fetchTasks = async () => {
-        setLoading(true)
-        try {
-            const response = await dataService.getTasks();
-            console.log(response)
-            setTasks(response ?? []);
-        } catch (error) {
-            console.error("Error fetching tasks:", error);
-        } finally {
-            setLoading(false)
-        }
-    };
+    const { data: tasks, isLoading, isError, error } = useTasks();
 
     const filteredTasks = useMemo(() => {
         if (filter === 'ALL') {
-            return tasks;
+            return tasks || [];
         }
-        return tasks.filter(t => t.status === filter);
+        return (tasks || []).filter(t => t.status === filter);
     }, [tasks, filter]);
+
+    if (isError) {
+        return <div className="p-4 md:p-8">Error: {error?.message}</div>;
+    }
+
     return (
         <div className="p-4 md:p-8 space-y-8">
             <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between">
@@ -64,7 +50,7 @@ function TasksPage() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {loading ? (
+                {isLoading ? (
                     Array.from({ length: 6 }).map((_, i) => (
                         <Card key={i} className="flex flex-col w-full h-full p-5 shadow-sm border border-gray-200 dark:border-gray-700 rounded-lg">
                             <CardHeader className="pb-3 px-0 pt-0">
@@ -85,7 +71,7 @@ function TasksPage() {
                     ))
                 ) : filteredTasks.length > 0 ? (
                     filteredTasks.map(task => (
-                        <TaskCard key={task.id} task={task} refresh={fetchTasks} />
+                        <TaskCard key={task.id} task={task} />
                     ))
                 ) : (
                     <p className="text-gray-500">No tasks found. Add a new task to get started!</p>

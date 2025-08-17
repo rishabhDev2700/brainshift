@@ -7,9 +7,10 @@ import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useState } from "react";
-import { dataService } from "@/services/api-service.ts";
 import { localDateTimeToUTC } from "@/lib/utils";
 import { Loader2Icon } from "lucide-react";
+import { useAddSubtask } from "../../hooks/useSubtasks";
+import { toast } from "sonner";
 
 const subtaskSchema = z.object({
     id: z.number().optional(),
@@ -33,8 +34,8 @@ interface SubtaskFormProps {
     onSubtaskCreated: () => void;
 }
 
-export function SubtaskForm({ taskId }: SubtaskFormProps) {
-    const [loading, setLoading] = useState<boolean>(false)
+export function SubtaskForm({ taskId, onSubtaskCreated }: SubtaskFormProps) {
+    const addSubtaskMutation = useAddSubtask();
     const {
         register,
         handleSubmit,
@@ -53,20 +54,22 @@ export function SubtaskForm({ taskId }: SubtaskFormProps) {
     const [error, setError] = useState<string | null>(null)
 
     const onSubmit: SubmitHandler<SubtaskFormValues> = async (data) => {
-        setLoading(true)
         setError(null)
         const utcDeadline = localDateTimeToUTC(data.deadline);
-        try {
-            await dataService.addSubtask(taskId, { ...data, deadline: utcDeadline.toISOString() });
-            window.location.reload();
-        } catch (error) {
-            console.error("Error saving subtask:", error);
-            setError("Failed to save subtask. Please try again.")
-        }
-        finally {
-            setLoading(false)
-        }
+        addSubtaskMutation.mutate({ taskID: taskId, data: { ...data, deadline: utcDeadline.toISOString() } }, {
+            onSuccess: () => {
+                toast.success("Subtask created successfully!");
+                onSubtaskCreated();
+            },
+            onError: (err) => {
+                console.error("Error saving subtask:", err);
+                setError("Failed to save subtask. Please try again.");
+                toast.error("Failed to save subtask.");
+            }
+        });
     };
+
+    const loading = addSubtaskMutation.isPending;
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6">

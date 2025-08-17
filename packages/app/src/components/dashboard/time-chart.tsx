@@ -8,8 +8,8 @@ import {
 import { Activity } from "lucide-react"
 
 const timeChartConfig = {
-    desktop: {
-        label: "Desktop",
+    totalDuration: {
+        label: "Time Spent (minutes)",
         color: "var(--chart-2)",
         icon: Activity,
     },
@@ -27,24 +27,54 @@ export function TimeChart({ data }: { data: any[] }) {
                         right: 12,
                     }}
                 >
+                    <defs>
+                        <linearGradient id="fillTotalDuration" x1="0" y1="0" x2="0" y2="1">
+                            <stop
+                                offset="5%"
+                                stopColor="var(--chart-2)"
+                                stopOpacity={0.8}
+                            />
+                            <stop
+                                offset="95%"
+                                stopColor="var(--chart-2)"
+                                stopOpacity={0.1}
+                            />
+                        </linearGradient>
+                    </defs>
                     <CartesianGrid vertical={false} />
                     <XAxis
-                        dataKey="month"
+                        dataKey="date"
                         tickLine={false}
                         axisLine={false}
                         tickMargin={8}
-                        tickFormatter={(value) => value.slice(0, 3)}
+                        tickFormatter={(value) => {
+                            const date = new Date(value)
+                            return date.toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                            })
+                        }}
                     />
                     <ChartTooltip
                         cursor={false}
-                        content={<ChartTooltipContent hideLabel />}
+                        content={
+                            <ChartTooltipContent
+                                labelFormatter={(value) => {
+                                    return new Date(value).toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                    })
+                                }}
+                                indicator="dot"
+                            />
+                        }
                     />
                     <Area
-                        dataKey="desktop"
+                        dataKey="totalDuration"
                         type="step"
-                        fill="var(--color-desktop)"
+                        fill="url(#fillTotalDuration)"
                         fillOpacity={0.4}
-                        stroke="var(--color-desktop)"
+                        stroke="var(--chart-2)"
                     />
                 </AreaChart>
             </ResponsiveContainer>

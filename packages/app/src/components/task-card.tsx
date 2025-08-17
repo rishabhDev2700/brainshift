@@ -12,16 +12,25 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import { dataService } from "@/services/api-service"
 import { Badge } from "./ui/badge"
 import { CalendarIcon, Trash2Icon } from "lucide-react"
+import { useDeleteTask } from "../hooks/useTasks";
+import { toast } from "sonner";
 
-function TaskCard({ task, refresh }: { task: TaskSchema, refresh: () => Promise<void> }) {
+function TaskCard({ task }: { task: TaskSchema }) {
+    const deleteTaskMutation = useDeleteTask();
 
     async function handleDelete(id: number | undefined) {
         if (id) {
-            await dataService.deleteTask(id)
-            refresh()
+            deleteTaskMutation.mutate(id, {
+                onSuccess: () => {
+                    toast.success("Task deleted successfully!");
+                },
+                onError: (error) => {
+                    console.error("Error deleting task:", error);
+                    toast.error("Failed to delete task.");
+                }
+            });
         }
     }
     return (

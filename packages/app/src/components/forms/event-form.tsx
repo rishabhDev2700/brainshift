@@ -5,11 +5,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { useForm, type SubmitHandler } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { dataService } from "@/services/api-service";
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { localDateTimeToUTC, utcToLocalDateTime } from "@/lib/utils"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { useEventById, useAddEvent, useUpdateEvent } from "../../hooks/useEvents";
 
 const eventFormSchema = z.object({
     id: z.number().optional(),
@@ -21,49 +21,73 @@ const eventFormSchema = z.object({
 type EventFormData = z.infer<typeof eventFormSchema>;
 
 interface EventFormProps {
-    fetchEvents: () => void;
+    onEventSaved: () => void;
     id?: number;
 }
 
-export function EventForm({ fetchEvents, id }: EventFormProps) {
-    const [loading, setLoading] = useState(false)
-    const { register, handleSubmit, reset, formState: { errors } } = useForm<EventFormData>({
+export function EventForm({ onEventSaved, id }: EventFormProps) {
+    const { register, handleSubmit, reset, formState: { errors }, getValues } = useForm<EventFormData>({
         resolver: zodResolver(eventFormSchema),
         defaultValues: {
             date: utcToLocalDateTime(new Date().toUTCString())
         }
     });
 
+    const { data: event, isLoading: eventLoading } = useEventById(id!);
+    const addEventMutation = useAddEvent();
+    const updateEventMutation = useUpdateEvent();
+
     useEffect(() => {
-        if (id) {
-            dataService.getEventById(id).then(g => {
+        if (id && event) {
+            const currentTitle = getValues().title;
+            const currentDescription = getValues().description;
+
+            if (currentTitle !== event.title || currentDescription !== event.description) {
                 reset({
-                    id: g.id,
-                    title: g.title,
-                    description: g.description,
-                    date: utcToLocalDateTime(g.date),
+                    id: event.id,
+                    title: event.title,
+                    description: event.description,
+                    date: utcToLocalDateTime(event.date),
                 })
-            })
+            }
         }
-    }, [])
+    }, [id, event, reset, getValues])
+
     const onSubmit: SubmitHandler<EventFormData> = async (data) => {
         console.log(data)
-        setLoading(true)
         const utcDate = localDateTimeToUTC(data.date);
         try {
             if (id) {
-                await dataService.updateEvent(id, { ...data, date: utcDate.toISOString() });
+                updateEventMutation.mutate({ id, data: { ...data, date: utcDate.toISOString() } }, {
+                    onSuccess: () => {
+                        toast.success("Event Saved");
+                        onEventSaved();
+                    },
+                    onError: (err) => {
+                        console.error("Error saving event:", err);
+                        toast.error("Unable to save");
+                    }
+                });
             } else {
-                await dataService.addEvent({ ...data, date: utcDate.toISOString() });
+                addEventMutation.mutate({ ...data, date: utcDate.toISOString() }, {
+                    onSuccess: () => {
+                        toast.success("Event Saved");
+                        onEventSaved();
+                    },
+                    onError: (err) => {
+                        console.error("Error saving event:", err);
+                        toast.error("Unable to save");
+                    }
+                });
             }
-            fetchEvents();
-            setLoading(false)
-            toast.success("Event Saved")
         } catch (error) {
             console.error("Error saving event:", error);
             toast.error("Unable to save")
         }
     };
+
+    const loading = eventLoading || addEventMutation.isPending || updateEventMutation.isPending;
+
     return (
         <>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

@@ -1,22 +1,38 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { dataService } from "@/services/api-service";
 import type { SubtaskSchema } from "@/types";
 import { Badge } from "./ui/badge";
 import { EditSubtaskForm } from "./forms/edit-subtask-form";
 import { useState } from "react";
 import { CalendarIcon, Trash2Icon, EditIcon } from "lucide-react";
+import { useDeleteSubtask } from "../hooks/useSubtasks";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface SubtaskCardProps {
     subtask: SubtaskSchema;
     taskId: number;
-    fetchTask: () => void;
 }
 
-export function SubtaskCard({ subtask, taskId, fetchTask }: SubtaskCardProps) {
+export function SubtaskCard({ subtask, taskId }: SubtaskCardProps) {
     const [isEditSubtaskDialogOpen, setIsEditSubtaskDialogOpen] = useState(false);
     const [editingSubtask, setEditingSubtask] = useState<SubtaskSchema | null>(null);
+
+    const deleteSubtaskMutation = useDeleteSubtask();
+    const queryClient = useQueryClient();
+
+    const handleDelete = () => {
+        deleteSubtaskMutation.mutate({ taskID: taskId, id: subtask.id! }, {
+            onSuccess: () => {
+                toast.success("Subtask deleted successfully!");
+            },
+            onError: (error: Error) => {
+                console.error("Error deleting subtask:", error);
+                toast.error("Failed to delete subtask.");
+            }
+        });
+    };
 
     return (
         <Card className="flex flex-col w-full p-4 shadow-sm hover:shadow-md transition-shadow duration-200 ease-in-out border border-gray-200 dark:border-gray-700 rounded-lg">
@@ -57,7 +73,8 @@ export function SubtaskCard({ subtask, taskId, fetchTask }: SubtaskCardProps) {
                                 <EditSubtaskForm subtask={editingSubtask} onSubtaskUpdated={() => {
                                     setIsEditSubtaskDialogOpen(false);
                                     setEditingSubtask(null);
-                                    fetchTask();
+                                    queryClient.invalidateQueries({ queryKey: ['subtasks'] });
+                                    queryClient.invalidateQueries({ queryKey: ['tasks'] });
                                 }} />
                             )}
                         </DialogContent>
@@ -75,10 +92,7 @@ export function SubtaskCard({ subtask, taskId, fetchTask }: SubtaskCardProps) {
                             </DialogHeader>
                             <DialogFooter>
                                 <Button variant="secondary">Cancel</Button>
-                                <Button variant="destructive" onClick={async () => {
-                                    await dataService.deleteSubtask(taskId, subtask.id!);
-                                    fetchTask();
-                                }}>Delete</Button>
+                                <Button variant="destructive" onClick={handleDelete}>Delete</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>

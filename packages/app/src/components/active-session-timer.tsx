@@ -71,7 +71,7 @@ export function ActiveSessionTimer({ session, onComplete }: ActiveSessionTimerPr
           {isPomodoroSession ? 'Time Remaining' : 'Time Elapsed'}
           {isOvertime && ' (Overtime)'}
         </h3>
-        <p className={`text-3xl font-bold ${isOvertime ? 'text-red-500 animate-pulse' : 'text-green-600'}`}>
+        <p className={`text-8xl font-mono font-bold text-center p-4 rounded-lg ${isOvertime ? 'text-red-500 animate-pulse bg-red-100 dark:bg-red-900' : 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900'}`}>
           {formatTime(currentTime)}
         </p>
       </div>

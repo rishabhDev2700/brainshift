@@ -5,12 +5,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { useForm, Controller, type SubmitHandler } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { dataService } from "@/services/api-service";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { localDateTimeToUTC, utcToLocalDateTime } from "@/lib/utils"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { useGoalById, useAddGoal, useUpdateGoal } from "../../hooks/useGoals";
+
 const goalFormSchema = z.object({
     id: z.number().optional(),
     title: z.string().min(1, "Name is required"),
@@ -29,13 +30,12 @@ const goalFormSchema = z.object({
 type GoalFormData = z.infer<typeof goalFormSchema>;
 
 interface GoalFormProps {
-    fetchGoals: () => void;
     goals: any[];
+    goalsLoading: boolean;
     id?: number;
 }
 
-export function GoalForm({ fetchGoals, goals, id }: GoalFormProps) {
-    const [loading, setLoading] = useState(false)
+export function GoalForm({ goals, goalsLoading, id }: GoalFormProps) {
     const { register, handleSubmit, reset, control, formState: { errors } } = useForm<GoalFormData>({
         resolver: zodResolver(goalFormSchema),
         defaultValues: {
@@ -45,40 +45,57 @@ export function GoalForm({ fetchGoals, goals, id }: GoalFormProps) {
         }
     });
 
-    useEffect(() => {
-        if (id) {
-            dataService.getGoalById(id).then(g => {
+    const { data: goal, isLoading: goalLoading } = useGoalById(id!);
+    const addGoalMutation = useAddGoal();
+    const updateGoalMutation = useUpdateGoal();
 
-                reset({
-                    id: g.id,
-                    title: g.title,
-                    description: g.description,
-                    status: g.status,
-                    priority: g.priority,
-                    deadline: utcToLocalDateTime(g.deadline),
-                    parentId: g.parentId === undefined ? -1 : g.parentId,
-                })
+    useEffect(() => {
+        if (id && goal) {
+            reset({
+                id: goal.id,
+                title: goal.title,
+                description: goal.description,
+                status: goal.status,
+                priority: goal.priority,
+                deadline: utcToLocalDateTime(goal.deadline),
+                parentId: goal.parentId === undefined ? -1 : goal.parentId,
             })
         }
-    }, [])
+    }, [id, goal, reset])
+
     const onSubmit: SubmitHandler<GoalFormData> = async (data) => {
         console.log(data)
-        setLoading(true)
         const utcDeadline = localDateTimeToUTC(data.deadline);
         try {
             if (id) {
-                await dataService.updateGoal(id, { ...data, deadline: utcDeadline.toISOString(), parentId: data.parentId === -1 ? undefined : data.parentId });
+                updateGoalMutation.mutate({ id, goal: { ...data, deadline: utcDeadline.toISOString(), parentId: data.parentId === -1 ? undefined : data.parentId } }, {
+                    onSuccess: () => {
+                        toast.success("Goal Saved");
+                    },
+                    onError: (err) => {
+                        console.error("Error saving goal:", err);
+                        toast.error("Unable to save");
+                    }
+                });
             } else {
-                await dataService.addGoal({ ...data, deadline: utcDeadline.toISOString(), parentId: data.parentId === -1 ? undefined : data.parentId });
+                addGoalMutation.mutate({ ...data, deadline: utcDeadline.toISOString(), parentId: data.parentId === -1 ? undefined : data.parentId }, {
+                    onSuccess: () => {
+                        toast.success("Goal Saved");
+                    },
+                    onError: (err) => {
+                        console.error("Error saving goal:", err);
+                        toast.error("Unable to save");
+                    }
+                });
             }
-            fetchGoals();
-            setLoading(false)
-            toast.success("Goal Saved")
         } catch (error) {
             console.error("Error saving goal:", error);
             toast.error("Unable to save")
         }
     };
+
+    const loading = goalLoading || addGoalMutation.isPending || updateGoalMutation.isPending || goalsLoading;
+
     return (
         <>
             <h1 className="text-emerald-600 font-semibold text-xl md:text-3xl mb-4">{id ? "Edit Goal" : "New Goal"}</h1>
@@ -106,7 +123,9 @@ export function GoalForm({ fetchGoals, goals, id }: GoalFormProps) {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem key={-1} value="-1">None</SelectItem>
-                                    {Array.isArray(goals) ? goals.map(g => <SelectItem key={g.id} value={g.id.toString()}>{g.title}</SelectItem>) : "No Goal"}
+                                    {goalsLoading ? (
+                                        <SelectItem value="loading" disabled>Loading goals...</SelectItem>
+                                    ) : Array.isArray(goals) ? goals.map(g => <SelectItem key={g.id} value={g.id.toString()}>{g.title}</SelectItem>) : "No Goal"}
                                 </SelectContent>
                             </Select>
                         )}

@@ -1,101 +1,188 @@
-import { useState, useEffect } from 'react';
-import { dataService } from "@/services/api-service.ts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { Link } from 'react-router-dom';
-import type { EventSchema, GoalSchema, TaskSchema } from '@/types';
+import { Link, useNavigate } from 'react-router-dom';
+import { useTasks } from '../hooks/useTasks';
+import { useGoals } from '../hooks/useGoals';
+import { useEventsByDate } from '../hooks/useEvents';
+import { useAddSession } from '../hooks/useSessions';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
+import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function Dashboard() {
-    const [tasks, setTasks] = useState<TaskSchema[]>([]);
-    const [goals, setGoals] = useState<GoalSchema[]>([]);
-    const [events, setEvents] = useState<EventSchema[]>([]);
+    const todayISO = new Date().toISOString().split('T')[0];
+    const navigate = useNavigate();
+    const { mutateAsync: createSession } = useAddSession();
+    const [isCreatingSession, setIsCreatingSession] = useState(false);
 
-    useEffect(() => {
-        fetchData();
-    }, []);
-
-    const fetchData = async () => {
+    const handleQuickSessionStart = async () => {
+        setIsCreatingSession(true);
         try {
-            const today = new Date().toISOString().split('T')[0];
-            const [tasksResponse, goalsResponse, eventsResponse] = await Promise.all([
-                dataService.getTasks(),
-                dataService.getGoals(),
-                dataService.getEventsByDate(today),
-            ]);
-
-            if (Array.isArray(tasksResponse)) {
-                setTasks(tasksResponse);
-            } else {
-                console.error("API response for tasks is not an array:", tasksResponse);
-                setTasks([]);
-            }
-
-            if (Array.isArray(goalsResponse)) {
-                setGoals(goalsResponse);
-            } else {
-                console.error("API response for goals is not an array:", goalsResponse);
-                setGoals([]);
-            }
-
-            if (Array.isArray(eventsResponse)) {
-                setEvents(eventsResponse);
-            } else {
-                console.error("API response for events is not an array:", eventsResponse);
-                setEvents([]);
-            }
+            const newSession = await createSession({
+                targetType: "task",
+                startTime: new Date().toISOString(),
+                isCancelled: false,
+                isPomodoro: false,
+                completed: false,
+            });
+            toast.success("Quick session started!", { description: newSession.title });
+            navigate(`/dashboard/sessions/${newSession.id}`);
         } catch (error) {
-            console.error("Error fetching data for My Day page:", error);
+            toast.error("Failed to start quick session.");
+            console.error("Error starting quick session:", error);
+        } finally {
+            setIsCreatingSession(false);
         }
     };
 
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
+    const { data: tasks, isLoading: tasksLoading, isError: tasksError } = useTasks();
+    const { data: goals, isLoading: goalsLoading, isError: goalsError } = useGoals();
+    const { data: events, isLoading: eventsLoading, isError: eventsError } = useEventsByDate(todayISO);
 
-    const tasksDueToday = tasks.filter(task => {
+    const isLoading = tasksLoading || goalsLoading || eventsLoading;
+    const isError = tasksError || goalsError || eventsError;
+
+    // Data filtering - directly using data from hooks
+    const todayDate = new Date();
+    const tomorrowDate = new Date(todayDate);
+    tomorrowDate.setDate(todayDate.getDate() + 1);
+
+    const tasksDueToday = tasks?.filter(task => {
         const deadline = new Date(task.deadline);
-        return task.status !== "COMPLETED" && deadline.toDateString() === today.toDateString();
-    });
+        return task.status !== "COMPLETED" && deadline.toDateString() === todayDate.toDateString();
+    }) || [];
 
-    const tasksDueSoon = tasks.filter(task => {
+    const tasksDueSoon = tasks?.filter(task => {
         const deadline = new Date(task.deadline);
-        return task.status !== "COMPLETED" && deadline > today && deadline <= tomorrow;
-    }).sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+        return task.status !== "COMPLETED" && deadline > todayDate && deadline <= tomorrowDate;
+    }).sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime()) || [];
 
-    const achievableGoals = goals.filter(goal => {
-        return goal.status === "IN PROGRESS" && tasks.some(task => task.status !== "COMPLETED" && task.description.includes(goal.title.split(' ')[0]));
-    });
+    const achievableGoals = goals?.filter(goal => {
+        return goal.status === "IN PROGRESS" && tasks?.some(task => task.status !== "COMPLETED" && task.description?.includes(goal.title.split(' ')[0]));
+    }) || [];
+
+    if (isLoading) {
+        return (
+            <div className="p-4 md:p-8 space-y-8">
+                <div className="flex flex-col md:flex-row items-center justify-between mb-4">
+                    <Skeleton className="h-10 w-48" />
+                    <div className="flex flex-wrap justify-end gap-4">
+                        <Skeleton className="h-10 w-32" />
+                        <Skeleton className="h-10 w-32" />
+                        <Skeleton className="h-10 w-32" />
+                        <Skeleton className="h-10 w-32" />
+                    </div>
+                </div>
+
+                <section>
+                    <Skeleton className="h-8 w-64 mb-4" />
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {[...Array(3)].map((_, i) => (
+                            <Card key={i}>
+                                <CardHeader>
+                                    <Skeleton className="h-6 w-3/4 mb-2" />
+                                    <Skeleton className="h-4 w-1/2" />
+                                </CardHeader>
+                                <CardContent>
+                                    <Skeleton className="h-8 w-full" />
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </section>
+
+                <section>
+                    <Skeleton className="h-8 w-64 mb-4" />
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {[...Array(3)].map((_, i) => (
+                            <Card key={i}>
+                                <CardHeader>
+                                    <Skeleton className="h-6 w-3/4 mb-2" />
+                                    <Skeleton className="h-4 w-1/2" />
+                                </CardHeader>
+                                <CardContent>
+                                    <Skeleton className="h-8 w-full" />
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </section>
+
+                <section>
+                    <Skeleton className="h-8 w-64 mb-4" />
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {[...Array(3)].map((_, i) => (
+                            <Card key={i}>
+                                <CardHeader>
+                                    <Skeleton className="h-6 w-3/4 mb-2" />
+                                    <Skeleton className="h-4 w-1/2" />
+                                </CardHeader>
+                                <CardContent>
+                                    <Skeleton className="h-8 w-full" />
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </section>
+
+                <section>
+                    <Skeleton className="h-8 w-64 mb-4" />
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {[...Array(3)].map((_, i) => (
+                            <Card key={i}>
+                                <CardHeader>
+                                    <Skeleton className="h-6 w-3/4 mb-2" />
+                                    <Skeleton className="h-4 w-1/2" />
+                                </CardHeader>
+                                <CardContent>
+                                    <Skeleton className="h-8 w-full" />
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </section>
+            </div>
+        );
+    }
+
+    if (isError) {
+        return <div className="p-4 md:p-8">Error loading dashboard data.</div>;
+    }
 
     return (
         <div className="p-4 md:p-8 space-y-8">
             <div className="flex flex-col md:flex-row items-center justify-between mb-4">
                 <h1 className="text-2xl font-bold">Dashboard</h1>
                 <div className="flex flex-wrap justify-end gap-4">
-                    <Button asChild>
+                    <Button onClick={handleQuickSessionStart} disabled={isCreatingSession} className="bg-emerald-600 hover:bg-emerald-700">
+                        {isCreatingSession ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <Plus className="mr-2 h-4 w-4" />
+                        )}
+                        Quick Start Session
+                    </Button>
+                    <Button asChild className="bg-emerald-600 hover:bg-emerald-700">
                         <Link to="/dashboard/goals/new">
                             <Plus className="mr-2 h-4 w-4" />
                             New Goal
                         </Link>
                     </Button>
-                    <Button asChild>
+                    <Button asChild className="bg-emerald-600 hover:bg-emerald-700">
                         <Link to="/dashboard/tasks/new">
                             <Plus className="mr-2 h-4 w-4" />
                             New Task
                         </Link>
                     </Button>
-                    <Button asChild>
-                        <Link to="/dashboard/sessions/new">
-                            <Plus className="mr-2 h-4 w-4" />
-                            New Session
-                        </Link>
-                    </Button>
+
                 </div>
             </div>
 
             <section>
                 <h3 className="text-lg md:text-2xl font-semibold mb-4">Today's Events</h3>
-                {events.length > 0 ? (
+                {events && events.length > 0 ? (
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {events.map(event => (
                             <Card key={event.id}>
@@ -108,7 +195,7 @@ function Dashboard() {
                                         <span className="text-sm text-gray-500">{new Date(event.date).toLocaleTimeString()}</span>
                                     </div>
                                     <Link to={`/dashboard/calendar/${event.id}`} className="mt-4 block">
-                                        <Button variant="outline" className="w-full border-emerald-600 text-emerald-600 hover:bg-emerald-50">
+                                        <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700">
                                             View Event
                                         </Button>
                                     </Link>
@@ -141,7 +228,7 @@ function Dashboard() {
                                         <span className="text-sm text-gray-500">Due: {new Date(task.deadline).toLocaleDateString()}</span>
                                     </div>
                                     <Link to={`/dashboard/tasks/${task.id}`} className="mt-4 block">
-                                        <Button variant="outline" className="w-full border-emerald-600 text-emerald-600 hover:bg-emerald-50">
+                                        <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700">
                                             View Task
                                         </Button>
                                     </Link>
@@ -174,7 +261,7 @@ function Dashboard() {
                                         <span className="text-sm text-gray-500">Due: {new Date(task.deadline).toLocaleDateString()}</span>
                                     </div>
                                     <Link to={`/dashboard/tasks/${task.id}`} className="mt-4 block">
-                                        <Button variant="outline" className="w-full border-emerald-600 text-emerald-600 hover:bg-emerald-50">
+                                        <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700">
                                             View Task
                                         </Button>
                                     </Link>
@@ -199,12 +286,12 @@ function Dashboard() {
                                 </CardHeader>
                                 <CardContent>
                                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${goal.status === "NOT STARTED" ? "bg-gray-200 text-gray-800" :
-                                        goal.status === "IN PROGRESS" ? "bg-blue-200 text-blue-800" : goal.status === "COMPLETED" ? "bg-green-200 text-green-800" : "bg-amber-200 text-red-80"
-                                        }`}>
+                                        goal.status === "IN PROGRESS" ? "bg-blue-200 text-blue-800" : goal.status === "COMPLETED" ? "bg-green-200 text-green-800" : "bg-amber-200 text-red-80"}
+                                        `}>
                                         {goal.status}
                                     </span>
                                     <Link to="/dashboard/goals" className="mt-4 block">
-                                        <Button variant="outline" className="w-full border-emerald-600 text-emerald-600 hover:bg-emerald-50">
+                                        <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700">
                                             View Goal
                                         </Button>
                                     </Link>

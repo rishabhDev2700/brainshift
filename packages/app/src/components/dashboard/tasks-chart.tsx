@@ -72,7 +72,7 @@ export function TasksChart({ data }: { data: any[] }) {
                         }
                     />
                     <Area
-                        dataKey="tasks"
+                        dataKey="count" // Changed from "tasks" to "count"
                         type="natural"
                         fill="url(#fillTasks)"
                         stroke="var(--chart-2)"

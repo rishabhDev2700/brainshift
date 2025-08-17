@@ -21,9 +21,8 @@ function UserDropdown() {
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <Link to="/dashboard/profile"><DropdownMenuItem>Profile</DropdownMenuItem></Link>
-                <DropdownMenuItem>Billing</DropdownMenuItem>
-                <DropdownMenuItem>Team</DropdownMenuItem>
-                <DropdownMenuItem>Subscription</DropdownMenuItem>
+                
+                <Link to="/dashboard/subscription"><DropdownMenuItem>Subscription</DropdownMenuItem></Link>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>Log Out</DropdownMenuItem>
             </DropdownMenuContent>

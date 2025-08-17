@@ -3,12 +3,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useEffect, useState } from "react";
-import { dataService } from "@/services/api-service";
-import type { TaskSchema, SessionSchema, SubtaskSchema } from "@/types";
+import { useState } from "react";
+import type { SessionSchema } from "@/types";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useTasks } from "../../hooks/useTasks";
+import { useAllSubtasksForUser } from "../../hooks/useSubtasks";
+import { useAddSession } from "../../hooks/useSessions";
+import { Loader2Icon } from "lucide-react";
 
 const sessionFormSchema = z.object({
     targetType: z.enum(["task", "subtask"]),
@@ -30,13 +33,14 @@ type SessionFormData = z.infer<typeof sessionFormSchema>;
 
 interface SessionStartFormProps {
     onSessionStart: (session: SessionSchema) => void;
-    isActionLoading: boolean;
 }
 
 export function SessionStartForm({ onSessionStart }: SessionStartFormProps) {
     const navigate = useNavigate();
-    const [tasks, setTasks] = useState<TaskSchema[]>([]);
-    const [subtasks, setSubtasks] = useState<SubtaskSchema[]>([]); // New state for subtasks
+    const { data: tasks, isLoading: tasksLoading } = useTasks();
+    const { data: subtasks, isLoading: subtasksLoading } = useAllSubtasksForUser();
+    const addSessionMutation = useAddSession();
+
     const [selectedTargetType, setSelectedTargetType] = useState<"task" | "subtask">("task");
     const [selectedSessionType, setSelectedSessionType] = useState<"pomodoro" | "manual">("manual");
     const { register, handleSubmit, control, formState: { errors } } = useForm<SessionFormData>({
@@ -47,52 +51,31 @@ export function SessionStartForm({ onSessionStart }: SessionStartFormProps) {
         },
     });
 
-    useEffect(() => {
-        fetchTasks();
-        fetchSubtasks();
-    }, []);
-
-    const fetchTasks = async () => {
-        try {
-            const fetchedTasks = await dataService.getTasks();
-            setTasks(fetchedTasks || []);
-        } catch (error) {
-            console.error("Error fetching tasks:", error);
-        }
-    };
-
-    const fetchSubtasks = async () => {
-        try {
-            const fetchedSubtasks = await dataService.getAllSubtasksForUser();
-            setSubtasks(fetchedSubtasks || []);
-        } catch (error) {
-            console.error("Error fetching subtasks:", error);
-        }
-    };
-
     const onSubmit = async (data: SessionFormData) => {
         console.log("Form data:", data);
-        try {
-            const newSession: Partial<SessionSchema> = {
-                targetType: data.targetType,
-                targetId: data.targetId,
-                startTime: new Date().toISOString(),
-                isPomodoro: data.sessionType === "pomodoro",
-                completed: false,
-                duration: data.sessionType === "pomodoro" ? data.duration : undefined,
-            };
-            console.log("Payload to API:", newSession);
-            const response = await dataService.addSession(newSession as SessionSchema);
-            if (response) {
+        const newSession: Partial<SessionSchema> = {
+            targetType: data.targetType,
+            targetId: data.targetId,
+            startTime: new Date().toISOString(),
+            isPomodoro: data.sessionType === "pomodoro",
+            completed: false,
+            duration: data.sessionType === "pomodoro" ? data.duration : undefined,
+        };
+        console.log("Payload to API:", newSession);
+        addSessionMutation.mutate(newSession as SessionSchema, {
+            onSuccess: (response) => {
                 toast.success("Session started successfully!");
                 onSessionStart(response.data);
                 navigate("/dashboard/sessions");
+            },
+            onError: (error) => {
+                console.error("Error starting session:", error);
+                toast.error("Failed to start session.");
             }
-        } catch (error) {
-            console.error("Error starting session:", error);
-            toast.error("Failed to start session.");
-        }
+        });
     };
+
+    const isSubmitting = addSessionMutation.isPending;
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -127,7 +110,9 @@ export function SessionStartForm({ onSessionStart }: SessionStartFormProps) {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="0">None</SelectItem>
-                            {tasks.map(task => (
+                            {tasksLoading ? (
+                                <SelectItem value="loading" disabled>Loading tasks...</SelectItem>
+                            ) : tasks?.map(task => (
                                 <SelectItem key={task.id} value={task.id?.toString() || ""}>
                                     {task.title}
                                 </SelectItem>
@@ -149,9 +134,11 @@ export function SessionStartForm({ onSessionStart }: SessionStartFormProps) {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="0">None</SelectItem>
-                                    {subtasks.map(subtask => (
+                                    {subtasksLoading ? (
+                                        <SelectItem value="loading" disabled>Loading subtasks...</SelectItem>
+                                    ) : subtasks?.map(subtask => (
                                         <SelectItem key={subtask.id} value={subtask.id?.toString() || ""}>
-                                            {subtask.title} (Task: {tasks.find(t => t.subtasks?.some(s => s.id === subtask.id))?.title})
+                                            {subtask.title} (Task: {tasks?.find(t => t.subtasks?.some(s => s.id === subtask.id))?.title})
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -196,8 +183,8 @@ export function SessionStartForm({ onSessionStart }: SessionStartFormProps) {
                 </div>
             )}
 
-            <Button type="submit" className="w-full p-2 bg-indigo-500 hover:bg-indigo-800 text-white">
-                Start Session
+            <Button type="submit" className="w-full p-2 bg-indigo-500 hover:bg-indigo-800 text-white" disabled={isSubmitting}>
+                {isSubmitting ? <Loader2Icon className="animate-spin" /> : "Start Session"}
             </Button>
         </form>)
 }

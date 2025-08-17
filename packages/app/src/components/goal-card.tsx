@@ -12,16 +12,25 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import { dataService } from "@/services/api-service"
 import { Badge } from "./ui/badge"
 import { CalendarIcon, Trash2Icon } from "lucide-react"
+import { useDeleteGoal } from "../hooks/useGoals";
+import { toast } from "sonner";
 
-function GoalCard({ goal, refresh }: { goal: GoalSchema, refresh: () => Promise<void> }) {
+function GoalCard({ goal }: { goal: GoalSchema }) {
+    const deleteGoalMutation = useDeleteGoal();
 
     async function handleDelete(id: number | undefined) {
         if (id) {
-            await dataService.deleteGoal(id)
-            refresh()
+            deleteGoalMutation.mutate(id, {
+                onSuccess: () => {
+                    toast.success("Goal deleted successfully!");
+                },
+                onError: (error) => {
+                    console.error("Error deleting goal:", error);
+                    toast.error("Failed to delete goal.");
+                }
+            });
         }
     }
     return (
@@ -64,7 +73,7 @@ function GoalCard({ goal, refresh }: { goal: GoalSchema, refresh: () => Promise<
                                         Cancel
                                     </Button>
                                 </DialogClose>
-                                <Button variant="destructive" onClick={async() => handleDelete(goal.id)}>Delete</Button>
+                                <Button variant="destructive" onClick={() => handleDelete(goal.id)}>Delete</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>

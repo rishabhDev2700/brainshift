@@ -5,7 +5,6 @@ import { CalendarIcon, ClockIcon } from "lucide-react";
 
 interface SessionItemProps {
     session: SessionSchema;
-    isActionLoading: boolean;
 }
 
 export function SessionItem({ session }: SessionItemProps) {

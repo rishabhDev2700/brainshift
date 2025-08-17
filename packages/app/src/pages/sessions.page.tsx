@@ -1,6 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { dataService } from "@/services/api-service";
-import type { SessionSchema } from "@/types";
+import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SessionItem } from "@/components/session-item";
@@ -9,71 +7,43 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { SessionStartForm } from "@/components/forms/session-start-form";
 import { ActiveSessionTimer } from "@/components/active-session-timer";
-
+import { useSessions, useCompleteSession, useCancelSession } from "../hooks/useSessions";
+import { useQueryClient } from "@tanstack/react-query";
 
 function SessionsPage() {
-    const [sessions, setSessions] = useState<SessionSchema[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [isActionLoading, setIsActionLoading] = useState(false);
-    const [activeSession, setActiveSession] = useState<SessionSchema | null>(null);
     const [filter, setFilter] = useState<'ALL' | "COMPLETED" | "CANCELLED">('ALL');
+    const queryClient = useQueryClient();
 
-    const fetchSessions = useCallback(async () => {
-        setLoading(true);
-        try {
-            const fetchedSessions = await dataService.getSessions();
-            setSessions(fetchedSessions);
-            const currentActiveSession = fetchedSessions.find(
-                (session) => !session.completed && !session.isCancelled
-            );
-            setActiveSession(currentActiveSession || null);
-        } catch (error) {
-            console.error("Error fetching sessions:", error);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    const { data: sessions, isLoading, isError, error } = useSessions();
+    const completeSessionMutation = useCompleteSession();
+    const cancelSessionMutation = useCancelSession();
 
-    useEffect(() => {
-        fetchSessions();
-    }, [fetchSessions]);
+    const activeSession = sessions?.find((session) => !session.completed && !session.isCancelled);
 
-    const handleComplete = async (id: number) => {
-        setIsActionLoading(true);
-        try {
-            await dataService.completeSession(id, true);
-            fetchSessions();
-            setActiveSession(null);
-        } catch (error) {
-            console.error("Error completing session:", error);
-        } finally {
-            setIsActionLoading(false);
-        }
-    }
+    const handleComplete = useCallback((id: number) => {
+        completeSessionMutation.mutate({ id, completed: true });
+    }, [completeSessionMutation]);
 
-    const handleCancel = async (id: number) => {
-        setIsActionLoading(true);
-        try {
-            await dataService.cancelSession(id);
-            fetchSessions();
-        } catch (error) {
-            console.error("Error cancelling session:", error);
-        } finally {
-            setIsActionLoading(false);
-        }
-    }
+    const handleCancel = useCallback((id: number) => {
+        cancelSessionMutation.mutate(id);
+    }, [cancelSessionMutation]);
 
     const filteredSessions = useMemo(() => {
         if (filter === 'ALL') {
-            return sessions;
+            return sessions || [];
         }
-        return sessions.filter(s => {
+        return (sessions || []).filter(s => {
             if (filter === "COMPLETED") return s.completed;
             if (filter === "CANCELLED") return s.isCancelled;
             return true;
         });
     }, [sessions, filter]);
 
+    if (isError) {
+        return <div className="p-4 md:p-8">Error: {error?.message}</div>;
+    }
+
+    const isActionLoading = completeSessionMutation.isPending || cancelSessionMutation.isPending;
 
     return (
         <div className="container mx-auto px-0 md:px-8 py-4 md:py-8 space-y-8">
@@ -91,10 +61,9 @@ function SessionsPage() {
                                 <DialogHeader>
                                     <DialogTitle>Start New Session</DialogTitle>
                                 </DialogHeader>
-                                <SessionStartForm onSessionStart={(session) => {
-                                    setActiveSession(session);
-                                    fetchSessions();
-                                }} isActionLoading={isActionLoading} />
+                                <SessionStartForm onSessionStart={() => {
+                                    queryClient.invalidateQueries({ queryKey: ['sessions'] });
+                                }} />
                             </DialogContent>
                         </Dialog>
                     )}
@@ -133,7 +102,7 @@ function SessionsPage() {
                     </Select>
                 </div>
                 <div className="flex flex-col gap-4">
-                    {loading ? (
+                    {isLoading ? (
                         Array.from({ length: 3 }).map((_, i) => (
                             <Skeleton key={i} className="h-[100px] w-full rounded-xl" />
                         ))
@@ -142,7 +111,6 @@ function SessionsPage() {
                             <SessionItem
                                 key={session.id}
                                 session={session}
-                                isActionLoading={isActionLoading}
                             />
                         ))
                     ) : (

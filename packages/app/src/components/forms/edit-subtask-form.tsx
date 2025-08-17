@@ -6,10 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import * as z from "zod";
 import { useState } from "react";
-import { dataService } from "@/services/api-service.ts";
 import { localDateTimeToUTC } from "@/lib/utils";
 import { Loader2Icon } from "lucide-react";
 import type { SubtaskSchema } from "@/types";
+import { useUpdateSubtask } from "../../hooks/useSubtasks";
+import { toast } from "sonner";
 
 const subtaskSchema = z.object({
     id: z.number().optional(),
@@ -36,7 +37,7 @@ interface EditSubtaskFormProps {
 export function EditSubtaskForm({ subtask, onSubtaskUpdated }: EditSubtaskFormProps) {
     if (!subtask) return null;
 
-    const [loading, setLoading] = useState<boolean>(false)
+    const updateSubtaskMutation = useUpdateSubtask();
     const {
         register,
         handleSubmit,
@@ -52,20 +53,22 @@ export function EditSubtaskForm({ subtask, onSubtaskUpdated }: EditSubtaskFormPr
     const [error, setError] = useState<string | null>(null)
 
     const onSubmit: SubmitHandler<SubtaskFormValues> = async (data) => {
-        setLoading(true)
         setError(null)
         const utcDeadline = localDateTimeToUTC(data.deadline);
-        try {
-            await dataService.updateSubtask(subtask.taskId!, subtask.id!, { ...data, deadline: utcDeadline.toISOString() });
-            onSubtaskUpdated();
-        } catch (error) {
-            console.error("Error saving subtask:", error);
-            setError("Failed to save subtask. Please try again.")
-        }
-        finally {
-            setLoading(false)
-        }
+        updateSubtaskMutation.mutate({ taskID: subtask.taskId!, id: subtask.id!, data: { ...data, deadline: utcDeadline.toISOString() } }, {
+            onSuccess: () => {
+                toast.success("Subtask updated successfully!");
+                onSubtaskUpdated();
+            },
+            onError: (err: Error) => {
+                console.error("Error saving subtask:", err);
+                setError("Failed to save subtask. Please try again.");
+                toast.error("Failed to save subtask.");
+            }
+        });
     };
+
+    const loading = updateSubtaskMutation.isPending;
 
     return (
         <form key={subtask.id} onSubmit={handleSubmit(onSubmit)} className="grid gap-6">
