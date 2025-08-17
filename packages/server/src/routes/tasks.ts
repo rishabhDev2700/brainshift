@@ -4,7 +4,7 @@ import { db } from "../db/db";
 import { and, DrizzleError, eq } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
 import * as z from "zod";
-import { TasksTable } from "../db/schemas/tasks";
+import { TaskTable } from "../db/schemas/tasks";
 import { SubtaskTable } from "../db/schemas/subtasks";
 const app = new Hono<{ Variables: HonoVariables }>();
 const TaskSchema = z.object({
@@ -20,7 +20,7 @@ const TaskSchema = z.object({
 const SubtaskSchema = z.object({
   id: z.int().optional(),
   title: z.string(),
-  description: z.string(),
+  description: z.string().optional(),
   status: z.enum(["NOT STARTED", "IN PROGRESS", "COMPLETED", "CANCELLED"]),
   priority: z.int().min(0).max(4),
   deadline: z.string(),
@@ -35,8 +35,8 @@ app
     try {
       const tasks = await db
         .select()
-        .from(TasksTable)
-        .where(eq(TasksTable.userId, c.get("user").id));
+        .from(TaskTable)
+        .where(eq(TaskTable.userId, c.get("user").id));
       return c.json(tasks);
     } catch (err) {
       const error = err as DrizzleError;
@@ -46,11 +46,12 @@ app
   .get("/subtasks", async (c) => {
     try {
       const userId = c.get("user").id;
-      const subtasks = await db.select()
+      const subtasks = await db
+        .select()
         .from(SubtaskTable)
-        .innerJoin(TasksTable, eq(SubtaskTable.taskId, TasksTable.id))
-        .where(eq(TasksTable.userId, userId));
-      return c.json(subtasks.map(s => s.subtasks));
+        .innerJoin(TaskTable, eq(SubtaskTable.taskId, TaskTable.id))
+        .where(eq(TaskTable.userId, userId));
+      return c.json(subtasks.map((s) => s.subtasks));
     } catch (err) {
       const error = err as DrizzleError;
       console.log(error);
@@ -61,13 +62,12 @@ app
   .get("/:id", async (c) => {
     try {
       const { id } = c.req.param();
-      const [task] = await db.query.TasksTable.findMany({
+      const task = await db.query.TaskTable.findFirst({
         with: {
           subtasks: true,
         },
-        where: (tasks, { eq }) => (
-          eq(tasks.id, Number(id)), eq(tasks.userId, c.get("user").id)
-        ),
+        where: (tasks, { eq }) =>
+          and(eq(tasks.id, Number(id)), eq(tasks.userId, c.get("user").id)),
       });
       return c.json(task);
     } catch (err) {
@@ -80,11 +80,11 @@ app
     try {
       const { id } = c.req.param();
       const [deletedTask] = await db
-        .delete(TasksTable)
+        .delete(TaskTable)
         .where(
           and(
-            eq(TasksTable.id, Number(id)),
-            eq(TasksTable.userId, c.get("user").id)
+            eq(TaskTable.id, Number(id)),
+            eq(TaskTable.userId, c.get("user").id)
           )
         )
         .returning();
@@ -102,7 +102,7 @@ app
     try {
       const validated = c.req.valid("json");
       const [task] = await db
-        .insert(TasksTable)
+        .insert(TaskTable)
         .values({
           ...validated,
           deadline: new Date(validated.deadline),
@@ -128,7 +128,7 @@ app
       console.log(validated);
       const id = parseInt(c.req.param().id);
       const [task] = await db
-        .update(TasksTable)
+        .update(TaskTable)
         .set({
           id: id,
           ...validated,
@@ -138,8 +138,8 @@ app
         })
         .where(
           and(
-            eq(TasksTable.userId, c.get("user").id),
-            eq(TasksTable.id, Number(id))
+            eq(TaskTable.userId, c.get("user").id),
+            eq(TaskTable.id, Number(id))
           )
         )
         .returning();
@@ -161,10 +161,21 @@ app
   .get("/:taskID/subtasks/:subtaskID", async (c) => {
     const taskID = parseInt(c.req.param("taskID"));
     const subtaskID = parseInt(c.req.param("subtaskID"));
+    const userId = c.get("user").id;
 
     if (isNaN(taskID) || isNaN(subtaskID)) {
       return c.json({ error: "Invalid taskID or subtaskID" }, 400);
     }
+
+    const [task] = await db
+      .select()
+      .from(TaskTable)
+      .where(and(eq(TaskTable.id, taskID), eq(TaskTable.userId, userId)));
+
+    if (!task) {
+      return c.json({ error: "Task not found" }, 404);
+    }
+
     const subtask = await db.query.SubtaskTable.findFirst({
       where: and(
         eq(SubtaskTable.id, subtaskID),
@@ -185,9 +196,20 @@ app
 
   .post("/:taskID/subtasks", zValidator("json", SubtaskSchema), async (c) => {
     const taskID = parseInt(c.req.param("taskID"));
+    const userId = c.get("user").id;
     if (isNaN(taskID)) {
       return c.json({ error: "Invalid taskID" }, 400);
     }
+
+    const [task] = await db
+      .select()
+      .from(TaskTable)
+      .where(and(eq(TaskTable.id, taskID), eq(TaskTable.userId, userId)));
+
+    if (!task) {
+      return c.json({ error: "Task not found" }, 404);
+    }
+
     const validated = c.req.valid("json");
     const [subtask] = await db
       .insert(SubtaskTable)
@@ -209,9 +231,21 @@ app
     async (c) => {
       const taskID = parseInt(c.req.param().taskID);
       const subtaskID = parseInt(c.req.param().id);
+      const userId = c.get("user").id;
+
       if (isNaN(taskID)) {
         return c.json({ error: "Invalid taskID" }, 400);
       }
+
+      const [task] = await db
+        .select()
+        .from(TaskTable)
+        .where(and(eq(TaskTable.id, taskID), eq(TaskTable.userId, userId)));
+
+      if (!task) {
+        return c.json({ error: "Task not found" }, 404);
+      }
+
       const validated = c.req.valid("json");
       const [subtask] = await db
         .update(SubtaskTable)
@@ -236,6 +270,17 @@ app
     try {
       const id = parseInt(c.req.param().id);
       const taskID = parseInt(c.req.param().taskID);
+      const userId = c.get("user").id;
+
+      const [task] = await db
+        .select()
+        .from(TaskTable)
+        .where(and(eq(TaskTable.id, taskID), eq(TaskTable.userId, userId)));
+
+      if (!task) {
+        return c.json({ error: "Task not found" }, 404);
+      }
+
       const [deletedSubtask] = await db
         .delete(SubtaskTable)
         .where(and(eq(SubtaskTable.id, id), eq(SubtaskTable.taskId, taskID)))
@@ -257,6 +302,17 @@ app
       try {
         const id = parseInt(c.req.param().id);
         const taskID = parseInt(c.req.param().taskID);
+        const userId = c.get("user").id;
+
+        const [task] = await db
+          .select()
+          .from(TaskTable)
+          .where(and(eq(TaskTable.id, taskID), eq(TaskTable.userId, userId)));
+
+        if (!task) {
+          return c.json({ error: "Task not found" }, 404);
+        }
+
         const validated = c.req.valid("json");
         const [updatedSubtask] = await db
           .update(SubtaskTable)

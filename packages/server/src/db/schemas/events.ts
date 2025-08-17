@@ -8,7 +8,7 @@ import {
 import { UserTable } from "./users";
 import { timestamps } from "./common";
 
-export const EventsTable = pgTable("events", {
+export const EventTable = pgTable("events", {
   id: serial().primaryKey(),
   title: varchar().notNull(),
   description: varchar().notNull(),
@@ -16,5 +16,6 @@ export const EventsTable = pgTable("events", {
   userId: integer("user_id")
     .notNull()
     .references(() => UserTable.id, { onDelete: "cascade" }),
+  lastRemindedAt: timestamp("last_reminded_at", { withTimezone: true }),
   ...timestamps,
 });

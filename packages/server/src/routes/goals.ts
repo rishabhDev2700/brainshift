@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { HonoVariables } from "../types/hono";
 import { db } from "../db/db";
-import { GoalsTable } from "../db/schemas/goals";
+import { GoalTable } from "../db/schemas/goals";
 import { and, DrizzleError, eq } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
 import * as z from "zod";
@@ -10,7 +10,7 @@ const app = new Hono<{ Variables: HonoVariables }>();
 const GoalSchema = z.object({
   id: z.number().optional(),
   title: z.string().min(1, "Name is required"),
-  description: z.string(),
+  description: z.string().optional(),
   parentId: z.number().optional(),
   type: z.enum(["SHORT", "LONG"]),
   status: z.enum(["NOT STARTED", "IN PROGRESS", "COMPLETED", "CANCELLED"]),
@@ -25,8 +25,8 @@ app
     try {
       const goals = await db
         .select()
-        .from(GoalsTable)
-        .where(eq(GoalsTable.userId, c.get("user").id));
+        .from(GoalTable)
+        .where(eq(GoalTable.userId, c.get("user").id));
       return c.json(goals);
     } catch (err) {
       const error = err as DrizzleError;
@@ -38,11 +38,11 @@ app
       const { id } = c.req.param();
       const [goal] = await db
         .select()
-        .from(GoalsTable)
+        .from(GoalTable)
         .where(
           and(
-            eq(GoalsTable.id, Number(id)),
-            eq(GoalsTable.userId, c.get("user").id)
+            eq(GoalTable.id, Number(id)),
+            eq(GoalTable.userId, c.get("user").id)
           )
         );
       return c.json(goal);
@@ -56,11 +56,11 @@ app
     try {
       const { id } = c.req.param();
       const [deletedGoal] = await db
-        .delete(GoalsTable)
+        .delete(GoalTable)
         .where(
           and(
-            eq(GoalsTable.id, Number(id)),
-            eq(GoalsTable.userId, c.get("user").id)
+            eq(GoalTable.id, Number(id)),
+            eq(GoalTable.userId, c.get("user").id)
           )
         )
         .returning();
@@ -78,7 +78,7 @@ app
     try {
       const validated = c.req.valid("json");
       const [goal] = await db
-        .insert(GoalsTable)
+        .insert(GoalTable)
         .values({
           ...validated,
           deadline: new Date(validated.deadline),
@@ -102,7 +102,7 @@ app
       const validated = c.req.valid("json");
       const { id } = c.req.param();
       const [goal] = await db
-        .update(GoalsTable)
+        .update(GoalTable)
         .set({
           ...validated,
           userId: c.get("user").id,
@@ -110,8 +110,8 @@ app
         })
         .where(
           and(
-            eq(GoalsTable.userId, c.get("user").id),
-            eq(GoalsTable.id, Number(id))
+            eq(GoalTable.userId, c.get("user").id),
+            eq(GoalTable.id, Number(id))
           )
         )
         .returning();

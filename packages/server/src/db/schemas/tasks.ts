@@ -7,31 +7,32 @@ import {
 } from "drizzle-orm/pg-core";
 import { basic_info, timestamps } from "./common";
 import { UserTable } from "./users";
-import { GoalsTable } from "./goals";
+import { GoalTable } from "./goals";
 import { relations } from "drizzle-orm";
 import { SubtaskTable } from "./subtasks";
 
-export const TasksTable = pgTable("tasks", {
+export const TaskTable = pgTable("tasks", {
   id: serial().primaryKey(),
   ...basic_info,
   ...timestamps,
   priority: integer(),
-  deadline: timestamp({withTimezone:true}),
+  deadline: timestamp({ withTimezone: true }),
   userId: integer("user_id")
     .notNull()
-    .references(() => UserTable.id),
-  goalId: integer("goal_id").references((): AnyPgColumn => GoalsTable.id, {
+    .references(() => UserTable.id, { onDelete: "cascade" }),
+  goalId: integer("goal_id").references((): AnyPgColumn => GoalTable.id, {
     onDelete: "set null",
   }),
+  lastRemindedAt: timestamp("last_reminded_at", { withTimezone: true }),
 });
 
-export const tasksToUsersRelation = relations(TasksTable, ({ one }) => ({
+export const tasksToUsersRelation = relations(TaskTable, ({ one }) => ({
   user: one(UserTable, {
-    fields: [TasksTable.userId],
+    fields: [TaskTable.userId],
     references: [UserTable.id],
   }),
 }));
 
-export const tasksToSubtasks = relations(TasksTable, ({ many }) => ({
+export const tasksToSubtasks = relations(TaskTable, ({ many }) => ({
   subtasks: many(SubtaskTable),
 }));

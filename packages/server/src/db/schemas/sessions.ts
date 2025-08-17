@@ -6,7 +6,7 @@ import {
   timestamp,
   pgEnum,
 } from "drizzle-orm/pg-core";
-import { TasksTable } from "./tasks";
+import { TaskTable } from "./tasks";
 import { relations } from "drizzle-orm";
 import { UserTable } from "./users";
 
@@ -14,7 +14,7 @@ export const TargetType = pgEnum("target_type", ["task", "subtask"]);
 export const SessionsTable = pgTable("sessions", {
   id: serial().primaryKey(),
   targetType: TargetType("target_type").notNull(),
-  targetId: integer("task_id").references(() => TasksTable.id),
+  targetId: integer("task_id").references(() => TaskTable.id, { onDelete: "set null" }),
   startTime: timestamp("start_time", { withTimezone: true }).notNull(),
   endTime: timestamp("end_time", { withTimezone: true }),
   duration: integer(),

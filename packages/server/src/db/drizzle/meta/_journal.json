@@ -29,6 +29,27 @@
       "when": 1755200917620,
       "tag": "0003_sharp_speedball",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1755435037753,
+      "tag": "0004_even_sleepwalker",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1755458343614,
+      "tag": "0005_fresh_phalanx",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1755464133383,
+      "tag": "0006_chilly_wilson_fisk",
+      "breakpoints": true
     }
   ]
 }

@@ -15,7 +15,12 @@ import SessionRoutes from "./routes/sessions";
 import UserRoutes from "./routes/users";
 import AnalyticsRoute from "./routes/analytics";
 import FriendsRoutes from "./routes/friends";
+import FeedbackRoutes from "./routes/feedback";
+import SearchRoutes from "./routes/search";
 import { cors } from "hono/cors";
+import cron from "node-cron";
+import { checkAndSendReminders } from "./services/reminderService";
+
 const app = new Hono<{ Variables: HonoVariables }>().basePath("/api");
 
 const allowedOrigins = ["https://app.brainshift.in", "http://localhost:5173"];
@@ -37,6 +42,9 @@ app.use("/*", async (c, next) => {
   if (c.req.path.startsWith("/api/auth")) {
     return next();
   }
+  if (c.req.path.startsWith("/api/auth/verify-email")) {
+    return next();
+  }
 
   const jwtMiddleware = jwt({
     secret: process.env.JWT_SECRET as SignatureKey,
@@ -46,6 +54,9 @@ app.use("/*", async (c, next) => {
 
 app.use("/*", async (c, next) => {
   if (c.req.path.startsWith("/api/auth")) {
+    return next();
+  }
+  if (c.req.path.startsWith("/api/auth/verify-email")) {
     return next();
   }
 
@@ -80,6 +91,14 @@ app.route("/sessions", SessionRoutes);
 app.route("/users", UserRoutes);
 app.route("/analytics", AnalyticsRoute);
 app.route("/friends", FriendsRoutes);
+app.route("/feedback", FeedbackRoutes);
+app.route("/search", SearchRoutes);
+
+cron.schedule("0 * * * *", () => {
+  console.log("Running scheduled reminder check...");
+  checkAndSendReminders();
+});
+
 export default {
   fetch: app.fetch,
   port: process.env.PORT,

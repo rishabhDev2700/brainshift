@@ -3,7 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import type { HonoVariables } from "../types/hono";
 import { db } from "../db/db";
 import { and, DrizzleError, eq, gte, lt } from "drizzle-orm";
-import { EventsTable } from "../db/schemas/events";
+import { EventTable } from "../db/schemas/events";
 import * as z from "zod";
 
 const app = new Hono<{ Variables: HonoVariables }>();
@@ -11,7 +11,7 @@ const app = new Hono<{ Variables: HonoVariables }>();
 const EventSchema = z.object({
   id: z.int().optional(),
   title: z.string(),
-  description: z.string(),
+  description: z.string().optional(),
   date: z.string(),
 });
 
@@ -22,8 +22,8 @@ app
     try {
       const events = await db
         .select()
-        .from(EventsTable)
-        .where(eq(EventsTable.userId, c.get("user").id));
+        .from(EventTable)
+        .where(eq(EventTable.userId, c.get("user").id));
       console.log();
       return c.json(events);
     } catch (err) {
@@ -46,12 +46,12 @@ app
         const dayEnd = new Date(`${date}T23:59:59.999Z`);
         const events = await db
           .select()
-          .from(EventsTable)
+          .from(EventTable)
           .where(
             and(
-              eq(EventsTable.userId, c.get("user").id),
-              gte(EventsTable.date, dayStart),
-              lt(EventsTable.date, new Date(dayEnd.getTime() + 1))
+              eq(EventTable.userId, c.get("user").id),
+              gte(EventTable.date, dayStart),
+              lt(EventTable.date, new Date(dayEnd.getTime() + 1))
             )
           );
         console.log(events);
@@ -67,11 +67,11 @@ app
       const { id } = c.req.param();
       const [event] = await db
         .select()
-        .from(EventsTable)
+        .from(EventTable)
         .where(
           and(
-            eq(EventsTable.id, Number(id)),
-            eq(EventsTable.userId, c.get("user").id)
+            eq(EventTable.id, Number(id)),
+            eq(EventTable.userId, c.get("user").id)
           )
         );
       return c.json(event);
@@ -85,11 +85,11 @@ app
     try {
       const { id } = c.req.param();
       const [deletedEvent] = await db
-        .delete(EventsTable)
+        .delete(EventTable)
         .where(
           and(
-            eq(EventsTable.id, Number(id)),
-            eq(EventsTable.userId, c.get("user").id)
+            eq(EventTable.id, Number(id)),
+            eq(EventTable.userId, c.get("user").id)
           )
         )
         .returning();
@@ -107,9 +107,10 @@ app
     try {
       const validated = c.req.valid("json");
       const [event] = await db
-        .insert(EventsTable)
+        .insert(EventTable)
         .values({
           ...validated,
+          description: validated.description || "",
           date: new Date(validated.date),
           userId: c.get("user").id,
         })
@@ -131,16 +132,17 @@ app
       const validated = c.req.valid("json");
       const { id } = c.req.param();
       const [event] = await db
-        .update(EventsTable)
+        .update(EventTable)
         .set({
           ...validated,
+          description: validated.description || "",
           date: new Date(validated.date),
           userId: c.get("user").id,
         })
         .where(
           and(
-            eq(EventsTable.id, Number(id)),
-            eq(EventsTable.userId, c.get("user").id)
+            eq(EventTable.id, Number(id)),
+            eq(EventTable.userId, c.get("user").id)
           )
         )
         .returning();
