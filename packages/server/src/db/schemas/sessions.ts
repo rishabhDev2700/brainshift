@@ -18,6 +18,7 @@ export const SessionsTable = pgTable("sessions", {
   startTime: timestamp("start_time", { withTimezone: true }).notNull(),
   endTime: timestamp("end_time", { withTimezone: true }),
   duration: integer(),
+  breakDuration: integer("break_duration").default(0),
   isCancelled: boolean("is_cancelled").default(false),
   isPomodoro: boolean("is_pomodoro").default(false),
   completed: boolean("is_completed").default(false),

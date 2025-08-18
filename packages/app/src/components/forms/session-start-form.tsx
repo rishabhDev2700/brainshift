@@ -11,14 +11,16 @@ import { Button } from "@/components/ui/button";
 import { useTasks } from "../../hooks/useTasks";
 import { useAllSubtasksForUser } from "../../hooks/useSubtasks";
 import { useAddSession } from "../../hooks/useSessions";
+import { usePomodoroSettings } from "../../hooks/usePomodoroSettings";
 import { Loader2Icon } from "lucide-react";
 
 const sessionFormSchema = z.object({
     targetType: z.enum(["task", "subtask"]),
     targetId: z.number().optional(),
-    subtaskId: z.number().optional(), // New field for subtask ID
+    subtaskId: z.number().optional(),
     sessionType: z.enum(["pomodoro", "manual"]),
     duration: z.number().optional(),
+    breakDuration: z.number().optional(),
 }).refine(data => {
     if (data.sessionType === 'pomodoro') {
         return data.duration !== undefined && data.duration > 0;
@@ -40,6 +42,7 @@ export function SessionStartForm({ onSessionStart }: SessionStartFormProps) {
     const { data: tasks, isLoading: tasksLoading } = useTasks();
     const { data: subtasks, isLoading: subtasksLoading } = useAllSubtasksForUser();
     const addSessionMutation = useAddSession();
+    const { settings: pomodoroSettings } = usePomodoroSettings();
 
     const [selectedTargetType, setSelectedTargetType] = useState<"task" | "subtask">("task");
     const [selectedSessionType, setSelectedSessionType] = useState<"pomodoro" | "manual">("manual");
@@ -48,6 +51,8 @@ export function SessionStartForm({ onSessionStart }: SessionStartFormProps) {
         defaultValues: {
             targetType: "task",
             sessionType: "manual",
+            duration: pomodoroSettings.workDuration,
+            breakDuration: pomodoroSettings.breakDuration,
         },
     });
 
@@ -60,12 +65,13 @@ export function SessionStartForm({ onSessionStart }: SessionStartFormProps) {
             isPomodoro: data.sessionType === "pomodoro",
             completed: false,
             duration: data.sessionType === "pomodoro" ? data.duration : undefined,
+            breakDuration: data.sessionType === "pomodoro" ? data.breakDuration : undefined,
         };
         console.log("Payload to API:", newSession);
         addSessionMutation.mutate(newSession as SessionSchema, {
             onSuccess: (response) => {
                 toast.success("Session started successfully!");
-                onSessionStart(response.data);
+                onSessionStart(response);
                 navigate("/dashboard/sessions");
             },
             onError: (error) => {
@@ -172,14 +178,25 @@ export function SessionStartForm({ onSessionStart }: SessionStartFormProps) {
             </div>
 
             {selectedSessionType === "pomodoro" && (
-                <div>
-                    <Label className="mb-2" htmlFor="duration">Duration (minutes)</Label>
-                    <input
-                        type="number"
-                        {...register("duration", { valueAsNumber: true })}
-                        className="w-full p-2 border rounded"
-                    />
-                    {errors.duration && <p className="text-red-500 text-sm">{errors.duration.message}</p>}
+                <div className="space-y-4">
+                    <div>
+                        <Label className="mb-2" htmlFor="duration">Work Duration (minutes)</Label>
+                        <input
+                            type="number"
+                            {...register("duration", { valueAsNumber: true })}
+                            className="w-full p-2 border rounded"
+                        />
+                        {errors.duration && <p className="text-red-500 text-sm">{errors.duration.message}</p>}
+                    </div>
+                    <div>
+                        <Label className="mb-2" htmlFor="breakDuration">Break Duration (minutes)</Label>
+                        <input
+                            type="number"
+                            {...register("breakDuration", { valueAsNumber: true })}
+                            className="w-full p-2 border rounded"
+                        />
+                        {errors.breakDuration && <p className="text-red-500 text-sm">{errors.breakDuration.message}</p>}
+                    </div>
                 </div>
             )}
 

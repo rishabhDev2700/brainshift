@@ -50,6 +50,13 @@
       "when": 1755464133383,
       "tag": "0006_chilly_wilson_fisk",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1755466270122,
+      "tag": "0007_watery_dark_beast",
+      "breakpoints": true
     }
   ]
 }

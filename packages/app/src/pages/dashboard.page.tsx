@@ -27,7 +27,7 @@ function Dashboard() {
                 isPomodoro: false,
                 completed: false,
             });
-            toast.success("Quick session started!", { description: newSession.title });
+            toast.success("Quick session started!", { description: "Your session is now active." });
             navigate(`/dashboard/sessions/${newSession.id}`);
         } catch (error) {
             toast.error("Failed to start quick session.");
@@ -153,9 +153,9 @@ function Dashboard() {
 
     return (
         <div className="p-4 md:p-8 space-y-8">
-            <div className="flex flex-col md:flex-row items-center justify-between mb-4">
-                <h1 className="text-2xl font-bold">Dashboard</h1>
-                <div className="flex flex-wrap justify-end gap-4">
+            <div className=" mb-4">
+                <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+                <div className="flex flex-wrap gap-4 w-full">
                     <Button onClick={handleQuickSessionStart} disabled={isCreatingSession} className="bg-emerald-600 hover:bg-emerald-700">
                         {isCreatingSession ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

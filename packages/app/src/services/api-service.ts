@@ -113,7 +113,7 @@ export const dataService = {
   addEvent: async (data: EventSchema) => {
     try {
       const res = await dataClient.post("/events", data);
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 
@@ -122,7 +122,7 @@ export const dataService = {
   updateEvent: async (id: number, data: EventSchema) => {
     try {
       const res = await dataClient.put(`/events/${id}`, data);
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 
@@ -131,7 +131,7 @@ export const dataService = {
   deleteEvent: async (id: number) => {
     try {
       const res = await dataClient.delete(`/events/${id}`);
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 
@@ -161,7 +161,7 @@ export const dataService = {
   addTask: async (data: TaskSchema) => {
     try {
       const res = await dataClient.post("/tasks", data);
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 
@@ -170,7 +170,7 @@ export const dataService = {
   updateTask: async (id: number, data: TaskSchema) => {
     try {
       const res = await dataClient.put(`/tasks/${id}`, data);
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 
@@ -179,7 +179,7 @@ export const dataService = {
   deleteTask: async (id: number) => {
     try {
       const res = await dataClient.delete(`/tasks/${id}`);
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 
@@ -191,7 +191,7 @@ export const dataService = {
   addSubtask: async (taskID: number, data: SubtaskSchema) => {
     try {
       const res = await dataClient.post(`/tasks/${taskID}/subtasks`, data);
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 
@@ -200,7 +200,7 @@ export const dataService = {
   updateSubtask: async (taskID: number, id: number, data: SubtaskSchema) => {
     try {
       const res = await dataClient.put(`/tasks/${taskID}/subtasks/${id}`, data);
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 
@@ -209,7 +209,7 @@ export const dataService = {
   deleteSubtask: async (taskID: number, id: number) => {
     try {
       const res = await dataClient.delete(`/tasks/${taskID}/subtasks/${id}`);
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 
@@ -249,7 +249,7 @@ export const dataService = {
   addGoal: async (data: GoalSchema) => {
     try {
       const res = await dataClient.post("/goals", data);
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 
@@ -258,7 +258,7 @@ export const dataService = {
   updateGoal: async (id: number, goal: GoalSchema) => {
     try {
       const res = await dataClient.put(`/goals/${id}`, goal);
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 
@@ -267,7 +267,7 @@ export const dataService = {
   deleteGoal: async (id: number) => {
     try {
       const res = await dataClient.delete(`/goals/${id}`);
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 
@@ -290,7 +290,7 @@ export const dataService = {
   updateProfile: async (data: { fullName: string; email: string }) => {
     try {
       const res = await dataClient.put("/users/me", data);
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 
@@ -320,7 +320,7 @@ export const dataService = {
   addSession: async (data: SessionSchema) => {
     try {
       const res = await dataClient.post("/sessions", data);
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 
@@ -329,7 +329,7 @@ export const dataService = {
   updateSession: async (id: number, data: Partial<SessionSchema>) => {
     try {
       const res = await dataClient.put(`/sessions/${id}`, data);
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 
@@ -338,7 +338,7 @@ export const dataService = {
   deleteSession: async (id: number) => {
     try {
       const res = await dataClient.delete(`/sessions/${id}`);
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 
@@ -347,7 +347,7 @@ export const dataService = {
   cancelSession: async (id: number) => {
     try {
       const res = await dataClient.patch(`/sessions/${id}/cancel`);
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 
@@ -358,7 +358,7 @@ export const dataService = {
       const res = await dataClient.patch(`/sessions/${id}/completed`, {
         completed,
       });
-      return res;
+      return res.data;
     } catch (err) {
       console.log(err);
       throw err; 

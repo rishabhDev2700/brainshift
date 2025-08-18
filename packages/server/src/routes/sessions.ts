@@ -16,6 +16,7 @@ const SessionSchema = z.object({
   startTime: z.string(),
   endTime: z.string().optional(),
   duration: z.int().optional(),
+  breakDuration: z.int().optional(), 
   isPomodoro: z.boolean(),
   completed: z.boolean().default(false),
 });
@@ -105,10 +106,12 @@ app
       }
 
       const validated = c.req.valid("json");
+      console.log("Validated data:", validated);
       let values: any = {
         ...validated,
         startTime: new Date(validated.startTime),
         userId: userId,
+        breakDuration: validated.breakDuration === undefined ? null : validated.breakDuration,
       };
       console.log(values);
       if (validated.isPomodoro) {
@@ -172,6 +175,7 @@ app
 
       let values: any = {
         completed: validated.completed,
+        breakDuration: existingSession.breakDuration,
       };
 
       const sessionStartTime = new Date(existingSession.startTime);
@@ -180,11 +184,9 @@ app
         : new Date();
 
       if (existingSession.isPomodoro && existingSession.duration) {
-        // For pomodoro, if endTime is not explicitly set, calculate it based on start time and planned duration
         const plannedEndTime = new Date(
           sessionStartTime.getTime() + existingSession.duration * 60 * 1000
         );
-        // Use the later of the current time or planned end time to ensure duration is accurate
         sessionEndTime =
           sessionEndTime > plannedEndTime ? sessionEndTime : plannedEndTime;
       }

@@ -19,6 +19,7 @@ const VerifyEmailPage = React.lazy(() => import('./pages/verify-email.page'));
 const FeedbackPage = React.lazy(() => import('./pages/feedback.page'));
 const FriendsPage = React.lazy(() => import('./pages/friends.page'));
 const SubscriptionPage = React.lazy(() => import('./pages/subscription.page'));
+const SettingsPage = React.lazy(() => import('./pages/settings.page'));
 
 import { AuthProvider } from './contexts/auth-context';
 import PrivateRoute from './components/private-route';
@@ -91,6 +92,7 @@ function AnimatedRoutes() {
               <Route path='feedback' element={<FeedbackPage />} />
               <Route path='friends' element={<FriendsPage />} />
               <Route path='subscription' element={<SubscriptionPage />} />
+              <Route path='settings' element={<SettingsPage />} />
             </Route>
           </Route>
         </Routes>

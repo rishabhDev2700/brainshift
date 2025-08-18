@@ -43,6 +43,7 @@ export interface SessionSchema {
   startTime: string;
   endTime?: string;
   duration?: number;
+  breakDuration?: number; // New field for break duration
   isCancelled?: boolean;
   isPomodoro?: boolean;
   completed?: boolean;
