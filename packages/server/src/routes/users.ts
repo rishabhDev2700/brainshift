@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { HonoVariables } from "../types/hono";
 import { db } from "../db/db";
 import { UserTable } from "../db/schemas/users";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
 import * as z from "zod";
 

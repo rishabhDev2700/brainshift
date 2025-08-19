@@ -20,7 +20,7 @@ function Dashboard() {
     const handleQuickSessionStart = async () => {
         setIsCreatingSession(true);
         try {
-            const newSession = await createSession({
+            await createSession({
                 targetType: "task",
                 startTime: new Date().toISOString(),
                 isCancelled: false,
