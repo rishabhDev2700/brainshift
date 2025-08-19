@@ -28,7 +28,7 @@ function Dashboard() {
                 completed: false,
             });
             toast.success("Quick session started!", { description: "Your session is now active." });
-            navigate(`/dashboard/sessions/${newSession.id}`);
+            navigate(`/dashboard/sessions`);
         } catch (error) {
             toast.error("Failed to start quick session.");
             console.error("Error starting quick session:", error);
