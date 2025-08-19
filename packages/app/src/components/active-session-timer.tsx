@@ -33,7 +33,7 @@ export function ActiveSessionTimer({ session, currentPhase, remainingTime }: Act
       <h3 className="text-lg font-semibold mb-2">
         {isCountdown ? (isBreak ? 'Break Time' : 'Work Time') : 'Time Elapsed'}
       </h3>
-      <p className={`text-4xl md:text-6xl font-sixtyFour font-bold text-center p-4 rounded-lg ${timerColor}`}>
+      <p className={`text-3xl md:text-6xl font-sixtyFour font-bold text-center p-4 rounded-lg ${timerColor}`}>
         {formatTime(remainingTime)}
       </p>
     </div>
