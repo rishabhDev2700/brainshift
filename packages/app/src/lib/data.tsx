@@ -18,5 +18,5 @@ export const appRoutes: AppRoute[] = [
     { url: "/dashboard/friends", text: "Friends", icon: Users },
     { url: "/dashboard/Leaderboard", text: "Leaderboard", icon: Medal },
     { url: "/dashboard/feedback", text: "Feedback", icon: MessageSquare },
-    { url: "/dashboard/settings", text: "Settings", icon: Settings },
+    
 ]

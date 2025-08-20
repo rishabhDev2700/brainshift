@@ -21,6 +21,7 @@ function UserDropdown() {
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <Link to="/dashboard/profile"><DropdownMenuItem>Profile</DropdownMenuItem></Link>
+                <Link to="/dashboard/settings"><DropdownMenuItem>Settings</DropdownMenuItem></Link>
                 
                 <Link to="/dashboard/subscription"><DropdownMenuItem>Subscription</DropdownMenuItem></Link>
                 <DropdownMenuSeparator />
