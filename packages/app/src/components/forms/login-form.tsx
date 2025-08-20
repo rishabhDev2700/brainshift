@@ -11,6 +11,7 @@ import { Separator } from "../ui/separator"
 import { GoogleLogin } from '@react-oauth/google';
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+
 const loginSchema = z.object({
     email: z.string().email(),
     password: z.string().min(6),

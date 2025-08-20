@@ -18,6 +18,7 @@ const AnalyticsPage = React.lazy(() => import('./pages/analytics.page'));
 const VerifyEmailPage = React.lazy(() => import('./pages/verify-email.page'));
 const FeedbackPage = React.lazy(() => import('./pages/feedback.page'));
 const FriendsPage = React.lazy(() => import('./pages/friends.page'));
+const LeaderboardPage = React.lazy(() => import('./pages/leaderboard.page'));
 const SubscriptionPage = React.lazy(() => import('./pages/subscription.page'));
 const SettingsPage = React.lazy(() => import('./pages/settings.page'));
 
@@ -88,9 +89,11 @@ function AnimatedRoutes() {
               <Route path="calendar/:id" element={<EventDetailsPage />} />
               <Route path="sessions" element={<SessionsPage />} />
               <Route path="profile" element={<ProfilePage />} />
+              <Route path="profile/:userId" element={<ProfilePage />} />
               <Route path='analytics' element={<AnalyticsPage />} />
               <Route path='feedback' element={<FeedbackPage />} />
               <Route path='friends' element={<FriendsPage />} />
+              <Route path='leaderboard' element={<LeaderboardPage />} />
               <Route path='subscription' element={<SubscriptionPage />} />
               <Route path='settings' element={<SettingsPage />} />
             </Route>

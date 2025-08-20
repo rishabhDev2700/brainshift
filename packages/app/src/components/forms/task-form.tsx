@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import type { SubtaskSchema } from "@/types";
 import { localDateTimeToUTC } from "@/lib/utils";
 import { Loader2Icon, PlusCircle } from "lucide-react";
-import { Dialog, DialogContent,DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { SubtaskForm } from "./subtask-form";
 import { SubtaskCard } from "@/components/subtask-card";
 import { useTaskById, useAddTask, useUpdateTask } from "../../hooks/useTasks";
@@ -207,7 +207,7 @@ export function TaskForm({ id }: TaskFormProps) {
                 <Button disabled={loading} type="submit" className="bg-emerald-600 hover:bg-emerald-400 md:mt-5">{loading ? <Loader2Icon className="animate-spin" /> : (id ? "Save" : "Create Task")}</Button>
             </form>
 
-            {id && (
+            {id ? (
                 <div className="mt-8">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-2xl font-bold">Subtasks</h3>
@@ -232,7 +232,7 @@ export function TaskForm({ id }: TaskFormProps) {
                         ))}
                     </div>
                 </div>
-            )}
+            ) : ""}
         </div>
     )
 }

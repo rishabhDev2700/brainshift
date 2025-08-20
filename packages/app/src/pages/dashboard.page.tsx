@@ -8,14 +8,24 @@ import { useEventsByDate } from '../hooks/useEvents';
 import { useAddSession } from '../hooks/useSessions';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StreaksModal } from "@/components/streaks-modal";
 
 function Dashboard() {
     const todayISO = new Date().toISOString().split('T')[0];
     const navigate = useNavigate();
     const { mutateAsync: createSession } = useAddSession();
     const [isCreatingSession, setIsCreatingSession] = useState(false);
+    const [isStreaksModalOpen, setIsStreaksModalOpen] = useState(false);
+
+    useEffect(() => {
+        const hasVisitedDashboard = sessionStorage.getItem('hasVisitedDashboard');
+        if (!hasVisitedDashboard) {
+            setIsStreaksModalOpen(true);
+            sessionStorage.setItem('hasVisitedDashboard', 'true');
+        }
+    }, []);
 
     const handleQuickSessionStart = async () => {
         setIsCreatingSession(true);
@@ -153,6 +163,7 @@ function Dashboard() {
 
     return (
         <div className="p-4 md:p-8 space-y-8">
+            <StreaksModal isOpen={isStreaksModalOpen} onClose={() => setIsStreaksModalOpen(false)} />
             <div className=" mb-4">
                 <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
                 <div className="flex flex-wrap gap-4 w-full">

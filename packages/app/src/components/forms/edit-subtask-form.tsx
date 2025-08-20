@@ -113,7 +113,7 @@ export function EditSubtaskForm({ subtask, onSubtaskUpdated }: EditSubtaskFormPr
                     name="priority"
                     control={control}
                     render={({ field }) => (
-                        <Select onValueChange={(value) => field.onChange(parseInt(value, 10))} defaultValue={field.value?.toString()}>
+                        <Select onValueChange={(value) => field.onChange(parseInt(value, 10))} value={(field.value ?? 0).toString()}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select Priority" />
                             </SelectTrigger>

@@ -49,3 +49,12 @@ export interface SessionSchema {
   completed?: boolean;
   userId?: number;
 }
+
+export interface User {
+  id: number;
+  fullName: string;
+  email: string;
+  goalsCompleted?: number;
+  tasksCompleted?: number;
+  timeSpent?: number;
+}

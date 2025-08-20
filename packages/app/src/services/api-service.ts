@@ -17,7 +17,7 @@ const authClient = axios.create({
   },
 });
 
-const dataClient = axios.create({
+export const dataClient = axios.create({
   baseURL: baseURL,
   timeout: 30000,
   headers: {
@@ -276,9 +276,10 @@ export const dataService = {
 
   // User resource
 
-  getProfile: async () => {
+  getProfile: async (id?: number) => {
     try {
-      const res = await dataClient.get("/users/me");
+      const url = id ? `/users/${id}` : "/users/me";
+      const res = await dataClient.get(url);
       console.log(res.data);
       return res.data;
     } catch (err) {

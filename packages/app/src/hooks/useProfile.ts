@@ -1,10 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dataService } from '../services/api-service';
 
-export const useProfile = () => {
+export const useProfile = (id?: number) => {
   return useQuery<any, Error>({
-    queryKey: ['profile'],
-    queryFn: dataService.getProfile,
+    queryKey: ['profile', id],
+    queryFn: () => dataService.getProfile(id),
   });
 };
 

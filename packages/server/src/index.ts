@@ -17,9 +17,10 @@ import AnalyticsRoute from "./routes/analytics";
 import FriendsRoutes from "./routes/friends";
 import FeedbackRoutes from "./routes/feedback";
 import SearchRoutes from "./routes/search";
+import StreaksRoute from "./routes/streaks";
 import { cors } from "hono/cors";
 import cron from "node-cron";
-import { checkAndSendReminders } from "./services/reminderService";
+
 
 const app = new Hono<{ Variables: HonoVariables }>().basePath("/api");
 
@@ -93,6 +94,7 @@ app.route("/analytics", AnalyticsRoute);
 app.route("/friends", FriendsRoutes);
 app.route("/feedback", FeedbackRoutes);
 app.route("/search", SearchRoutes);
+app.route("/streaks", StreaksRoute);
 
 cron.schedule("0 * * * *", () => {
   console.log("Running scheduled reminder check...");
