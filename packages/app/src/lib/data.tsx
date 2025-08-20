@@ -1,4 +1,4 @@
-import { Home, CheckSquare, Target, Calendar, PlayCircle, BarChart2, Users, MessageSquare, Settings, Medal } from "lucide-react";
+import { Home, CheckSquare, Target, Calendar, PlayCircle, BarChart2, Users, MessageSquare, Medal } from "lucide-react";
 import React from "react";
 
 export type AppRoute = {
@@ -18,5 +18,5 @@ export const appRoutes: AppRoute[] = [
     { url: "/dashboard/friends", text: "Friends", icon: Users },
     { url: "/dashboard/Leaderboard", text: "Leaderboard", icon: Medal },
     { url: "/dashboard/feedback", text: "Feedback", icon: MessageSquare },
-    
+
 ]
