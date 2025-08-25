@@ -22,13 +22,13 @@ function SideSheet() {
                     <MenuIcon color="black" size={32} />
                 </Button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="bg-emerald-600/10 backdrop-blur-xl border rounded-lg">
+            <SheetContent side="bottom" className="bg-emerald-200/60 dark:bg-emerald-600/10 backdrop-blur-xl border border-black/10 rounded-lg">
                 <SheetHeader>
                     <SheetTitle className="flex justify-center">  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="green" stroke="green" strokeWidth="1" strokeLinecap="square" strokeLinejoin="bevel" className="lucide lucide-zap-icon lucide-zap mx-2"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" /></svg>
-                        <div>BrainShift</div></SheetTitle>
+                        <div className="dark:bg-text-emerald-600">BrainShift</div></SheetTitle>
                     <SheetDescription className="flex flex-col">
                         {appRoutes.map((r, i) => (
-                            <NavLink key={i} className={`py-2 px-4 border-2 border-transparent hover:border-emerald-700 duration-100 ease-linear hover:bg-emerald-600 hover:text-white my-2 rounded-xl flex items-center`}
+                            <NavLink key={i} className={`py-2 px-4 border-2 border-transparent hover:border-emerald-700 duration-100 ease-linear hover:bg-emerald-600 text-black dark:text-white my-2 rounded-xl flex items-center`}
                                 to={r.url}
                                 end={r.url === "/dashboard"}>
                                 <r.icon className="mr-3 h-5 w-5" />

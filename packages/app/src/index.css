@@ -123,5 +123,5 @@
   }
 }
 a.active {
-  @apply text-emerald-600 hover:text-white;
+  @apply text-emerald-50 dark:text-emerald-300 hover:text-white;
 }
