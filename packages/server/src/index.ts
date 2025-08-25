@@ -20,6 +20,7 @@ import SearchRoutes from "./routes/search";
 import StreaksRoute from "./routes/streaks";
 import { cors } from "hono/cors";
 import cron from "node-cron";
+import { checkAndSendReminders } from "./services/reminderService";
 
 
 const app = new Hono<{ Variables: HonoVariables }>().basePath("/api");
