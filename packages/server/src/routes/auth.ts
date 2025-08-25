@@ -93,17 +93,25 @@ app
     }
 
     const refreshToken = randomBytes(64).toString("hex");
-    const refreshTokenExpiresAt = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000); // 5 days
-    await db.update(UserTable).set({ refreshToken, refreshTokenExpiresAt }).where(eq(UserTable.id, user.id));
+    const refreshTokenExpiresAt = new Date(
+      Date.now() + 5 * 24 * 60 * 60 * 1000
+    ); // 5 days
+    await db
+      .update(UserTable)
+      .set({ refreshToken, refreshTokenExpiresAt })
+      .where(eq(UserTable.id, user.id));
 
     const payload = {
       sub: user.id,
       fullName: user.fullName,
       email: user.email,
       emailVerified: user.emailVerified,
-      exp: Math.floor(Date.now() / 1000) + 60, // 1 minute
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day
     };
-    const accessToken = await sign(payload, process.env.JWT_SECRET as SignatureKey);
+    const accessToken = await sign(
+      payload,
+      process.env.JWT_SECRET as SignatureKey
+    );
 
     return c.json({ accessToken, refreshToken });
   })
@@ -123,7 +131,10 @@ app
       return c.json({ error: "Invalid refresh token" }, 401);
     }
 
-    if (user.refreshTokenExpiresAt && new Date() > new Date(user.refreshTokenExpiresAt)) {
+    if (
+      user.refreshTokenExpiresAt &&
+      new Date() > new Date(user.refreshTokenExpiresAt)
+    ) {
       return c.json({ error: "Refresh token expired" }, 401);
     }
 
@@ -132,9 +143,12 @@ app
       fullName: user.fullName,
       email: user.email,
       emailVerified: user.emailVerified,
-      exp: Math.floor(Date.now() / 1000) + 60, // 1 minute
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day
     };
-    const accessToken = await sign(payload, process.env.JWT_SECRET as SignatureKey);
+    const accessToken = await sign(
+      payload,
+      process.env.JWT_SECRET as SignatureKey
+    );
 
     return c.json({ accessToken });
   })
@@ -181,15 +195,20 @@ app
       }
 
       const refreshToken = randomBytes(64).toString("hex");
-      const refreshTokenExpiresAt = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000); // 5 days
-      await db.update(UserTable).set({ refreshToken, refreshTokenExpiresAt }).where(eq(UserTable.id, user.id));
+      const refreshTokenExpiresAt = new Date(
+        Date.now() + 5 * 24 * 60 * 60 * 1000
+      ); // 5 days
+      await db
+        .update(UserTable)
+        .set({ refreshToken, refreshTokenExpiresAt })
+        .where(eq(UserTable.id, user.id));
 
       const jwtPayload = {
         sub: user.id,
         fullName: user.fullName,
         email: user.email,
         emailVerified: user.emailVerified,
-        exp: Math.floor(Date.now() / 1000) + 60, // 1 minute
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day
       };
       const accessToken = await sign(
         jwtPayload,

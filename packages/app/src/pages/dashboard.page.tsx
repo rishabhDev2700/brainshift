@@ -76,83 +76,46 @@ function Dashboard() {
     if (isLoading) {
         return (
             <div className="p-4 md:p-8 space-y-8">
-                <div className="flex flex-col md:flex-row items-center justify-between mb-4">
-                    <Skeleton className="h-10 w-48" />
-                    <div className="flex flex-wrap justify-end gap-4">
-                        <Skeleton className="h-10 w-32" />
-                        <Skeleton className="h-10 w-32" />
-                        <Skeleton className="h-10 w-32" />
-                        <Skeleton className="h-10 w-32" />
+                {/* Top section skeleton */}
+                <div className="mb-4">
+                    <Skeleton className="h-8 w-48 mb-4" /> {/* Dashboard title skeleton */}
+                    <div className="flex flex-wrap gap-4 w-full">
+                        <Skeleton className="h-10 w-40" /> {/* Quick Start Session button skeleton */}
+                        <Skeleton className="h-10 w-32" /> {/* New Goal button skeleton */}
+                        <Skeleton className="h-10 w-32" /> {/* New Task button skeleton */}
+                        <Skeleton className="h-10 w-32" /> {/* View Streaks button skeleton */}
                     </div>
                 </div>
 
-                <section>
-                    <Skeleton className="h-8 w-64 mb-4" />
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {[...Array(3)].map((_, i) => (
-                            <Card key={i}>
-                                <CardHeader>
-                                    <Skeleton className="h-6 w-3/4 mb-2" />
-                                    <Skeleton className="h-4 w-1/2" />
-                                </CardHeader>
-                                <CardContent>
-                                    <Skeleton className="h-8 w-full" />
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </section>
-
-                <section>
-                    <Skeleton className="h-8 w-64 mb-4" />
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {[...Array(3)].map((_, i) => (
-                            <Card key={i}>
-                                <CardHeader>
-                                    <Skeleton className="h-6 w-3/4 mb-2" />
-                                    <Skeleton className="h-4 w-1/2" />
-                                </CardHeader>
-                                <CardContent>
-                                    <Skeleton className="h-8 w-full" />
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </section>
-
-                <section>
-                    <Skeleton className="h-8 w-64 mb-4" />
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {[...Array(3)].map((_, i) => (
-                            <Card key={i}>
-                                <CardHeader>
-                                    <Skeleton className="h-6 w-3/4 mb-2" />
-                                    <Skeleton className="h-4 w-1/2" />
-                                </CardHeader>
-                                <CardContent>
-                                    <Skeleton className="h-8 w-full" />
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </section>
-
-                <section>
-                    <Skeleton className="h-8 w-64 mb-4" />
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {[...Array(3)].map((_, i) => (
-                            <Card key={i}>
-                                <CardHeader>
-                                    <Skeleton className="h-6 w-3/4 mb-2" />
-                                    <Skeleton className="h-4 w-1/2" />
-                                </CardHeader>
-                                <CardContent>
-                                    <Skeleton className="h-8 w-full" />
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </section>
+                {/* Section skeletons */}
+                {[...Array(4)].map((_, sectionIndex) => (
+                    <section key={sectionIndex}>
+                        <Skeleton className="h-6 w-48 mb-4" /> {/* Section title skeleton */}
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {[...Array(3)].map((_, cardIndex) => (
+                                <Card key={cardIndex} className="flex flex-col w-full h-80 p-5 bg-white/10 dark:bg-black/10 backdrop-blur-lg border border-emerald-600/20 rounded-lg shadow-lg">
+                                    <CardHeader className="pb-3 px-0 pt-0">
+                                        <Skeleton className="h-6 w-3/4 mb-2" />
+                                    </CardHeader>
+                                    <CardContent className="flex-grow flex flex-col justify-between pt-3 px-0">
+                                        <div className="flex-grow">
+                                            <Skeleton className="h-4 w-full" />
+                                            <Skeleton className="h-4 w-full mt-2" />
+                                        </div>
+                                        <div className="flex items-center justify-between text-sm mb-4 pt-4 border-t border-emerald-600/20">
+                                            <Skeleton className="h-5 w-1/4 rounded-full" />
+                                            <Skeleton className="h-5 w-1/3" />
+                                        </div>
+                                        <div className="flex flex-col sm:flex-row mt-auto space-y-2 sm:space-y-0 sm:space-x-2 pt-4 border-t border-emerald-600/20">
+                                            <Skeleton className="h-10 w-full" />
+                                            <Skeleton className="h-10 w-10 rounded-md" />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    </section>
+                ))}
             </div>
         );
     }
