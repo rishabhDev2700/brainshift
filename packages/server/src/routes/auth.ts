@@ -92,16 +92,51 @@ app
       return c.json({ error: "Invalid credentials" }, 401);
     }
 
+    const refreshToken = randomBytes(64).toString("hex");
+    const refreshTokenExpiresAt = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000); // 5 days
+    await db.update(UserTable).set({ refreshToken, refreshTokenExpiresAt }).where(eq(UserTable.id, user.id));
+
     const payload = {
       sub: user.id,
       fullName: user.fullName,
       email: user.email,
       emailVerified: user.emailVerified,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
+      exp: Math.floor(Date.now() / 1000) + 60, // 1 minute
     };
-    const token = await sign(payload, process.env.JWT_SECRET as SignatureKey);
+    const accessToken = await sign(payload, process.env.JWT_SECRET as SignatureKey);
 
-    return c.json({ token });
+    return c.json({ accessToken, refreshToken });
+  })
+  .post("/refresh-token", async (c: Context) => {
+    const { refreshToken } = await c.req.json();
+
+    if (!refreshToken) {
+      return c.json({ error: "Refresh token is required" }, 400);
+    }
+
+    const [user] = await db
+      .select()
+      .from(UserTable)
+      .where(eq(UserTable.refreshToken, refreshToken));
+
+    if (!user) {
+      return c.json({ error: "Invalid refresh token" }, 401);
+    }
+
+    if (user.refreshTokenExpiresAt && new Date() > new Date(user.refreshTokenExpiresAt)) {
+      return c.json({ error: "Refresh token expired" }, 401);
+    }
+
+    const payload = {
+      sub: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      emailVerified: user.emailVerified,
+      exp: Math.floor(Date.now() / 1000) + 60, // 1 minute
+    };
+    const accessToken = await sign(payload, process.env.JWT_SECRET as SignatureKey);
+
+    return c.json({ accessToken });
   })
   .post("/google", async (c: Context) => {
     const { token: idToken } = await c.req.json();
@@ -145,19 +180,23 @@ app
         return c.json({ error: "Failed to create or retrieve user" }, 500);
       }
 
+      const refreshToken = randomBytes(64).toString("hex");
+      const refreshTokenExpiresAt = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000); // 5 days
+      await db.update(UserTable).set({ refreshToken, refreshTokenExpiresAt }).where(eq(UserTable.id, user.id));
+
       const jwtPayload = {
         sub: user.id,
         fullName: user.fullName,
         email: user.email,
         emailVerified: user.emailVerified,
-        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24 hours
+        exp: Math.floor(Date.now() / 1000) + 60, // 1 minute
       };
-      const token = await sign(
+      const accessToken = await sign(
         jwtPayload,
         process.env.JWT_SECRET as SignatureKey
       );
 
-      return c.json({ token });
+      return c.json({ accessToken, refreshToken });
     } catch (error) {
       console.error("Google authentication error:", error);
       return c.json({ error: "Google authentication failed" }, 401);

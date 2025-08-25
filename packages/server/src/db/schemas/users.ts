@@ -21,6 +21,8 @@ export const UserTable = pgTable("users", {
     "email_verification_token_expires_at",
     { withTimezone: true }
   ),
+  refreshToken: varchar("refresh_token"),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at", { withTimezone: true }),
   ...timestamps,
 });
 
