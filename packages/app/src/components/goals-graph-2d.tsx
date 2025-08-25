@@ -51,7 +51,7 @@ function GoalsGraph2D({ goals }: GoalsGraphProps) {
             <ForceGraph2D
                 width={dimensions.width}
                 height={dimensions.height}
-                backgroundColor={theme.theme === "dark" ? '#000F' : "#cccF"}
+                backgroundColor={theme.theme === "dark" ? '#222F' : "#cccF"}
                 graphData={graphData}
                 enableNodeDrag={true}
                 nodeAutoColorBy="status"
@@ -59,12 +59,11 @@ function GoalsGraph2D({ goals }: GoalsGraphProps) {
                 nodeLabel={n => n.title}
                 nodeCanvasObject={(node, ctx, globalScale) => {
                     const label = node.title;
-                    const fontSize = 12 / globalScale;
+                    const fontSize = 14 / globalScale;
                     ctx.font = `${fontSize}px Work sans`;
                     const textWidth = ctx.measureText(label).width;
                     const bckgDimensions: number[] = [textWidth, fontSize].map(n => n + fontSize * 1.5);
-
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.98)';
+                    ctx.fillStyle = 'rgba(255, 255, 255, 1)';
                     ctx.fillRect(Number(node.x) - bckgDimensions[0] / 2, Number(node.y) - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
 
                     ctx.textAlign = 'center';
@@ -76,7 +75,6 @@ function GoalsGraph2D({ goals }: GoalsGraphProps) {
 
                 linkColor={() => theme.theme === "dark" ? '#009966' : "#000"}
                 linkWidth={2}
-
             />
         </div>
     );

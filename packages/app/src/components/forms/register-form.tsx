@@ -50,7 +50,7 @@ export function RegisterForm() {
     };
 
     return (
-        <form className="w-full md:w-1/3" onSubmit={handleSubmit(onSubmit)}>
+        <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
             <Input className="my-4 py-2 px-4 rounded-full" aria-label="full name" type='text' placeholder='Full Name' {...register("fullName")} />
             {errors.fullName && <p className="text-red-500 text-sm">{errors.fullName.message as string}</p>}
             <Input className="my-4 py-2 px-4 rounded-full" aria-label="email" type='email' placeholder='Your Email' {...register("email")} />
@@ -60,7 +60,7 @@ export function RegisterForm() {
             <Input className="my-4 py-2 px-4 rounded-full" aria-label="confirm password" type='password' placeholder='Confirm Password' {...register("confirmPassword")} />
             {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword.message as string}</p>}
             <Button type="submit" className="w-full rounded-full bg-emerald-600 hover:bg-emerald-800" disabled={loading}>{loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Register"}</Button>
-            <Link className="text-gray-600 text-sm mt-4 block" to="/"><Button variant="secondary" className="w-full bg-neutral-100 dark:text-neutral-800 hover:bg-neutral-200 border border-neutral-200/40 rounded-full">Login</Button></Link>
+            <Link className="text-gray-600 text-sm mt-4 block" to="/"><Button variant="secondary" className="w-full bg-neutral-100 text-neutral-800 dark:text-neutral-800 hover:bg-neutral-200 border border-neutral-200/40 rounded-full">Login</Button></Link>
             <Link className="text-gray-600 text-sm mt-4 block hover:underline" to="/forgot-password">Forgot Password?</Link>
         </form>
     )
