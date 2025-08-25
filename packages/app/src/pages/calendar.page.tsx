@@ -33,40 +33,11 @@ function CalendarPage() {
     useEffect(() => {
         if (date) {
             const dateString = date.toISOString().split('T')[0];
-            setSearchParams({ date: dateString });
+            if (searchParams.get('date') !== dateString) {
+                setSearchParams({ date: dateString });
+            }
         }
-    }, [date, setSearchParams]);
-
-    if (isLoading) {
-        return (
-            <div className="p-4 md:p-8 space-y-4">
-                <div className="flex justify-between items-center">
-                    <Skeleton className="h-10 w-48" />
-                    <Skeleton className="h-10 w-32" />
-                </div>
-
-                <div className="grid lg:grid-cols-2 gap-8">
-                    <div>
-                        <Skeleton className="h-64 w-full mb-4" />
-                    </div>
-                    <div className="mt-4">
-                        <Skeleton className="h-8 w-64 mb-4" />
-                        <div className="space-y-4">
-                            {[...Array(3)].map((_, i) => (
-                                <div key={i} className="flex items-center space-x-4">
-                                    <Skeleton className="h-12 w-12 rounded-full" />
-                                    <div className="space-y-2">
-                                        <Skeleton className="h-4 w-[250px]" />
-                                        <Skeleton className="h-4 w-[200px]" />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    }, [date, searchParams, setSearchParams]);
 
     if (isError) {
         return <div className="p-4 md:p-8">Error: {error?.message}</div>;
@@ -108,16 +79,30 @@ function CalendarPage() {
                 </div>
                 <div className="mt-4">
                     <h3 className="text-xl font-semibold mb-4">Events for {date?.toLocaleDateString() || 'Selected Date'}</h3>
-                    <div className="space-y-4">
-                        {Array.isArray(events) && events.map(event => (
-                            <EventCard key={event.id} event={event} onEventDeleted={() => {
-                                queryClient.invalidateQueries({ queryKey: ['events'] });
-                                if (date) {
-                                    queryClient.invalidateQueries({ queryKey: ['events', date.toISOString().split('T')[0]] });
-                                }
-                            }} />
-                        ))}
-                    </div>
+                    {isLoading ? (
+                        <div className="space-y-4">
+                            {[...Array(3)].map((_, i) => (
+                                <div key={i} className="flex items-center space-x-4">
+                                    <Skeleton className="h-12 w-12 rounded-full" />
+                                    <div className="space-y-2">
+                                        <Skeleton className="h-4 w-[250px]" />
+                                        <Skeleton className="h-4 w-[200px]" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {Array.isArray(events) && events.map(event => (
+                                <EventCard key={event.id} event={event} onEventDeleted={() => {
+                                    queryClient.invalidateQueries({ queryKey: ['events'] });
+                                    if (date) {
+                                        queryClient.invalidateQueries({ queryKey: ['events', date.toISOString().split('T')[0]] });
+                                    }
+                                }} />
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

@@ -78,7 +78,7 @@ function Analytics() {
     return (
         <div className="p-4 md:p-8 space-y-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4">
-                <h2 className="text-xl md:text-3xl font-bold tracking-tight">Dashboard Overview</h2>
+                <h2 className="text-xl md:text-3xl font-bold tracking-tight">User Analytics</h2>
                 <div className="grid gap-2">
                     <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                         <PopoverTrigger asChild>

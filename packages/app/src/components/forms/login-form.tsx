@@ -29,14 +29,14 @@ export function LoginForm() {
         setLoading(true);
         try {
             const response = await authService.login(data);
-            if (response?.data.token) {
-                login(response?.data.token);
+            if (response?.data.accessToken && response?.data.refreshToken) {
+                login(response.data.accessToken, response.data.refreshToken);
                 toast.success("Logged in Successfully", { description: "Welcome" })
                 navigate('/dashboard');
             }
 
         } catch (err) {
-            toast.success("Something went wrong", { description: "Please try again" })
+            toast.error("Something went wrong", { description: "Please try again" })
             console.error(err)
         } finally {
             setLoading(false);
@@ -61,8 +61,8 @@ export function LoginForm() {
                         setLoading(true);
                         try {
                             const response = await authService.googleLogin(credentialResponse.credential);
-                            if (response?.data.token) {
-                                login(response?.data.token);
+                            if (response?.data.accessToken && response?.data.refreshToken) {
+                                login(response.data.accessToken, response.data.refreshToken);
                                 toast.success("Logged in Successfully", { description: "Welcome" })
                                 navigate('/dashboard');
                             }

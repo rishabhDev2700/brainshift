@@ -17,7 +17,7 @@ function UserDropdown() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild><Button className="border-2 md:mr-4" variant="outline"><User2Icon /></Button></DropdownMenuTrigger>
-            <DropdownMenuContent className="mr-2">
+            <DropdownMenuContent className="mr-2 bg-emerald-600/30 dark:bg-emerald-600/10 backdrop-blur-lg border rounded-lg">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <Link to="/dashboard/profile"><DropdownMenuItem>Profile</DropdownMenuItem></Link>

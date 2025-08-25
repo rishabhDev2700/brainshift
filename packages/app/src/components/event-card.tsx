@@ -41,9 +41,9 @@ function EventCard({ event, onEventDeleted }: EventCardProps) {
     }
 
     return (
-        <Card key={event.id} className="flex flex-col p-4 border border-gray-200 dark:border-gray-700">
+        <Card key={event.id} className="flex flex-col p-4 bg-white/10 dark:bg-black/10 backdrop-blur-lg border border-emerald-600/20 rounded-lg shadow-lg">
             <CardHeader className="p-0 pb-2">
-                <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">
+                <CardTitle className="text-lg font-semibold text-emerald-600 dark:text-emerald-400 mb-1">
                     {event.title}
                 </CardTitle>
                 <CardDescription className="text-sm text-gray-600 dark:text-gray-400 flex items-center space-x-1">
@@ -56,11 +56,11 @@ function EventCard({ event, onEventDeleted }: EventCardProps) {
                 <div className="flex justify-end space-x-2">
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" >
+                            <Button variant="outline" size="sm" className="text-emerald-600 border-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 dark:text-emerald-400 dark:border-emerald-400">
                                 Edit
                             </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="bg-white/80 dark:bg-black/80 backdrop-blur-lg border-emerald-600/20">
                             <DialogHeader>
                                 <DialogTitle>Edit Event</DialogTitle>
                                 <DialogDescription>
@@ -74,7 +74,7 @@ function EventCard({ event, onEventDeleted }: EventCardProps) {
                     </Dialog>
                     <Dialog>
                         <DialogTrigger asChild><Button variant="destructive" size="sm">Delete</Button></DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="bg-white/80 dark:bg-black/80 backdrop-blur-lg border-emerald-600/20">
                             <DialogHeader>
                                 <DialogTitle>Are you absolutely sure?</DialogTitle>
                                 <DialogDescription>

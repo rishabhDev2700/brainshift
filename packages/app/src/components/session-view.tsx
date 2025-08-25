@@ -108,13 +108,10 @@ export function SessionView() {
             startTime: new Date().toISOString(),
             completed: false,
             isCancelled: false,
-        }, {
-            onSuccess: (newSession) => {
-                setCurrentPhase('work');
-                setTimingSession(newSession);
-                setIsTransitioning(false);
-            }
-        });
+        } as SessionSchema);
+    
+        setCurrentPhase('work');
+        setIsTransitioning(false);
     }, [addSessionMutation]);
 
 

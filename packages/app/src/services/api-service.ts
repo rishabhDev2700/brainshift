@@ -41,10 +41,30 @@ dataClient.interceptors.request.use(
 
 dataClient.interceptors.response.use(
   (res) => res,
-  (err) => {
-    if (err.response?.status == 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/";
+  async (err) => {
+    const originalConfig = err.config;
+    if (err.response?.status === 401 && !originalConfig._retry) {
+      originalConfig._retry = true;
+      try {
+        const refreshToken = localStorage.getItem("refreshToken");
+        if (!refreshToken) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("refreshToken");
+          window.location.href = "/";
+          return Promise.reject(err);
+        }
+        const { data } = await authClient.post("/auth/refresh-token", {
+          refreshToken,
+        });
+        localStorage.setItem("token", data.accessToken);
+        originalConfig.headers.Authorization = `Bearer ${data.accessToken}`;
+        return dataClient(originalConfig);
+      } catch (_error) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
+        window.location.href = "/";
+        return Promise.reject(_error);
+      }
     }
     return Promise.reject(err);
   }

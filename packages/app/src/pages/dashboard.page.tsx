@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Flame, Plus } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom';
 import { useTasks } from '../hooks/useTasks';
 import { useGoals } from '../hooks/useGoals';
@@ -186,6 +186,10 @@ function Dashboard() {
                             <Plus className="mr-2 h-4 w-4" />
                             New Task
                         </Link>
+                    </Button>
+                    <Button onClick={() => setIsStreaksModalOpen(true)} className="bg-orange-500 hover:bg-orange-600">
+                        <Flame className="mr-2 h-4 w-4" />
+                        View Streaks
                     </Button>
 
                 </div>
