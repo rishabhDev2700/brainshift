@@ -14,6 +14,7 @@ import { dataService } from "@/services/api-service";
 import { Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { TaskSchema, GoalSchema, EventSchema } from "@/types"
+import { CurrentStreakBadge } from "@/components/current-streak-badge"
 
 function Layout() {
     const location = useLocation()
@@ -65,7 +66,7 @@ function Layout() {
             <SideSheet />
             <div className="w-full">
 
-                <div className='py-2 px-2 max-w-screen flex justify-end'>
+                <div className='py-2 px-2 max-w-screen flex justify-end sticky top-0 backdrop-blur-md'>
                     <div className='relative w-54' ref={searchRef}>
                         <div className='w-full flex items-center border px-4 rounded-full outline-2 focus-within:outline-emerald-600 focus-within:border-emerald-500 ring-transparent focus-visible:ring-2'>
                             <SearchIcon />
@@ -73,7 +74,7 @@ function Layout() {
                                 type='text'
                                 role="searchbox"
                                 placeholder='Search'
-                                className='border-0 focus-visible:ring-0 dark:bg-neutral-950'
+                                className='border-0 focus-visible:ring-0'
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onFocus={() => setShowResults(true)}
@@ -140,6 +141,7 @@ function Layout() {
                     </motion.main>
                 </AnimatePresence>
             </div>
+            <CurrentStreakBadge />
         </SidebarProvider>
     )
 }

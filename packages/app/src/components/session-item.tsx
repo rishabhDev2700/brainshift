@@ -1,13 +1,34 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { SessionSchema } from "@/types";
-import { CalendarIcon, ClockIcon } from "lucide-react";
+import { CalendarIcon, ClockIcon, TrashIcon } from "lucide-react";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useDeleteSession } from "@/hooks/useSessions";
 
 interface SessionItemProps {
     session: SessionSchema;
 }
 
 export function SessionItem({ session }: SessionItemProps) {
+    const deleteSessionMutation = useDeleteSession();
+
+    const handleDelete = () => {
+        if (session.id) {
+            deleteSessionMutation.mutate(session.id);
+        }
+    };
+
     const getStatusBadge = () => {
         if (session.completed) {
             return <Badge className="bg-green-800 text-white hover:bg-green-700">Completed</Badge>;
@@ -39,6 +60,27 @@ export function SessionItem({ session }: SessionItemProps) {
                 </div>
                 <div className="flex items-center gap-2 self-end sm:self-auto">
                     {getStatusBadge()}
+                    {session.completed || session.isCancelled ? (
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <TrashIcon className="h-4 w-4" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete this session.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-700 text-white">Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    ) : null}
                 </div>
             </CardContent>
         </Card>

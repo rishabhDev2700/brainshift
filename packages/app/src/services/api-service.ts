@@ -47,6 +47,7 @@ dataClient.interceptors.response.use(
       originalConfig._retry = true;
       try {
         const refreshToken = localStorage.getItem("refreshToken");
+        console.log("Retrieved refresh token from localStorage:", refreshToken);
         if (!refreshToken) {
           localStorage.removeItem("token");
           localStorage.removeItem("refreshToken");
