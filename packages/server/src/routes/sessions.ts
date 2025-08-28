@@ -219,6 +219,8 @@ app
 
         if (streak) {
           const lastStreakDate = new Date(streak.lastStreakDate as any);
+          console.log("lastStreakDate:", lastStreakDate);
+          console.log("today:", today);
           if (isYesterday(lastStreakDate)) {
             const newCurrentStreak = (streak.currentStreak || 0) + 1;
             await db
@@ -235,7 +237,7 @@ app
           } else if (!isSameDay(lastStreakDate, today)) {
             await db
               .update(StreaksTable)
-              .set({ currentStreak: 1, lastStreakDate: today })
+              .set({ currentStreak: 1, lastStreakDate: today, longestStreak: Math.max(1, streak.longestStreak || 0) })
               .where(eq(StreaksTable.userId, userId));
           }
         } else {
@@ -246,10 +248,25 @@ app
             lastStreakDate: today,
           });
         }
-      }
+      } else if (!session.completed) {
+        const [streak] = await db
+          .select()
+          .from(StreaksTable)
+          .where(eq(StreaksTable.userId, userId));
 
-      return c.json({ session });
-    }
-  );
+        if (streak) {
+          const lastStreakDate = new Date(streak.lastStreakDate as any);
+          const today = new Date();
+          if (!isSameDay(lastStreakDate, today) && !isYesterday(lastStreakDate)) {
+            await db
+              .update(StreaksTable)
+              .set({ currentStreak: 0 })
+              .where(eq(StreaksTable.userId, userId));
+          }
+        }
+
+        return c.json({ session });
+      }
+    });
 
 export default app;

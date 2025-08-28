@@ -93,9 +93,7 @@ app
     }
 
     const refreshToken = randomBytes(64).toString("hex");
-    const refreshTokenExpiresAt = new Date(
-      Date.now() + 5 * 24 * 60 * 60 * 1000
-    ); // 5 days
+    const refreshTokenExpiresAt = new Date(Date.now() + 60 * 60*24*5); // 5 Days
     await db
       .update(UserTable)
       .set({ refreshToken, refreshTokenExpiresAt })
@@ -106,7 +104,7 @@ app
       fullName: user.fullName,
       email: user.email,
       emailVerified: user.emailVerified,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day
+      exp: Math.floor(Date.now() / 1000) + 60*60*24, // 1 Day
     };
     const accessToken = await sign(
       payload,
@@ -195,9 +193,7 @@ app
       }
 
       const refreshToken = randomBytes(64).toString("hex");
-      const refreshTokenExpiresAt = new Date(
-        Date.now() + 5 * 24 * 60 * 60 * 1000
-      ); // 5 days
+      const refreshTokenExpiresAt = new Date(Date.now() + 60 * 60 * 24 * 5); // 5 days
       await db
         .update(UserTable)
         .set({ refreshToken, refreshTokenExpiresAt })
@@ -208,7 +204,7 @@ app
         fullName: user.fullName,
         email: user.email,
         emailVerified: user.emailVerified,
-        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day
+        exp: Math.floor(Date.now() / 1000) + 10, // 10 seconds
       };
       const accessToken = await sign(
         jwtPayload,

@@ -4,6 +4,7 @@ import type { HonoVariables } from "../types/hono";
 import { db } from "../db/db";
 import { StreaksTable } from "../db/schemas/streaks";
 import { eq } from "drizzle-orm";
+import { isSameDay, isYesterday } from "date-fns";
 
 const app = new Hono<{ Variables: HonoVariables }>();
 
@@ -21,6 +22,17 @@ app.get("/", async (c) => {
         longestStreak: 0,
         lastStreakDate: null,
       });
+    }
+
+    const today = new Date();
+    const lastStreakDate = new Date(streak.lastStreakDate as any);
+
+    if (!isSameDay(lastStreakDate, today) && !isYesterday(lastStreakDate)) {
+      await db
+        .update(StreaksTable)
+        .set({ currentStreak: 0 })
+        .where(eq(StreaksTable.userId, userId));
+      return c.json({ ...streak, currentStreak: 0 });
     }
 
     return c.json(streak);

@@ -41,10 +41,14 @@ app.get("/test", async (c) => {
 });
 app.route("/auth", AuthRoute);
 app.use("/*", async (c, next) => {
-  if (c.req.path.startsWith("/api/auth")) {
-    return next();
-  }
-  if (c.req.path.startsWith("/api/auth/verify-email")) {
+  const path = c.req.path;
+  if (
+    path.startsWith("/api/auth/login") ||
+    path.startsWith("/api/auth/register") ||
+    path.startsWith("/api/auth/google") ||
+    path.startsWith("/api/auth/verify-email") ||
+    path.startsWith("/api/auth/refresh-token")
+  ) {
     return next();
   }
 
@@ -55,10 +59,14 @@ app.use("/*", async (c, next) => {
 });
 
 app.use("/*", async (c, next) => {
-  if (c.req.path.startsWith("/api/auth")) {
-    return next();
-  }
-  if (c.req.path.startsWith("/api/auth/verify-email")) {
+  const path = c.req.path;
+  if (
+    path.startsWith("/api/auth/login") ||
+    path.startsWith("/api/auth/register") ||
+    path.startsWith("/api/auth/google") ||
+    path.startsWith("/api/auth/verify-email") ||
+    path.startsWith("/api/auth/refresh-token")
+  ) {
     return next();
   }
 

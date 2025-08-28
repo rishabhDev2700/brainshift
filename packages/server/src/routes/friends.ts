@@ -71,13 +71,16 @@ app
 
       const friends = await db
         .select({
-          friendId: FriendshipsTable.friendId,
+          friendId: sql<number>`CASE WHEN ${FriendshipsTable.userId} = ${user.id} THEN ${FriendshipsTable.friendId} ELSE ${FriendshipsTable.userId} END`,
         })
         .from(FriendshipsTable)
         .where(
           and(
-            eq(FriendshipsTable.userId, user.id),
-            eq(FriendshipsTable.status, "accepted")
+            eq(FriendshipsTable.status, "accepted"),
+            or(
+              eq(FriendshipsTable.userId, user.id),
+              eq(FriendshipsTable.friendId, user.id)
+            )
           )
         );
 
@@ -146,6 +149,7 @@ app
   })
   .get("/", async (c) => {
     const user = c.get("user");
+
     const friendships = await db
       .select({
         id: FriendshipsTable.id,
@@ -159,14 +163,17 @@ app
       .from(FriendshipsTable)
       .where(
         and(
+          eq(FriendshipsTable.status, "accepted"),
           or(
             eq(FriendshipsTable.userId, user.id),
             eq(FriendshipsTable.friendId, user.id)
-          ),
-          eq(FriendshipsTable.status, "accepted")
+          )
         )
       )
-      .leftJoin(UserTable, eq(FriendshipsTable.friendId, UserTable.id));
+      .leftJoin(
+        UserTable,
+        sql`CASE WHEN ${FriendshipsTable.userId} = ${user.id} THEN ${FriendshipsTable.friendId} ELSE ${FriendshipsTable.userId} END = ${UserTable.id}`
+      );
 
     return c.json(friendships);
   })
